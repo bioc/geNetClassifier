@@ -1,0 +1,33 @@
+
+export(geNetClassifier)
+export(queryGeNetClassifier)
+export(externalValidation.stats)
+export(externalValidation.probMatrix)
+export(querySummary)
+export(calculateGenesRanking)
+
+export(plotExpressionProfiles)
+export(plotDiscriminantPower)
+export(plotNetwork)
+export(plotAssignments)
+
+export(plot.GenesRanking)
+export(plot.GeNetClassifierReturn)
+export(plot.GenesNetwork)
+
+exportClasses(GenesRanking)
+exportMethods(initialize, show, overview, getRanking, gClasses, numGenes, numSignificantGenes, getTopRanking, setProperties, genesDetails)
+
+exportClasses(GenesNetwork)
+exportMethods(initialize, show, overview, getSubNetwork, getNodes, getNumNodes, getEdges, getNumEdges, network2txt)
+
+exportClasses(GeneralizationError)
+exportMethods(initialize, show, overview)
+
+exportClasses(GeNetClassifierReturn)
+exportMethods(initialize, show, overview, names)
+
+import(Biobase)
+importFrom(e1071, svm)
+importFrom(ipred, kfoldcv)
+importFrom(graphics, plot)

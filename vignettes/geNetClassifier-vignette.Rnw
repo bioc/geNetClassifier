@@ -1,0 +1,884 @@
+% -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
+%\VignetteIndexEntry{geNetClassifier-vignette}
+%\VignetteKeywords{Classification, Network, Gene Expression, SVM, feature selection, cross-validation, gene marker, machine-learning}
+%\VignetteDepends{geNetClassifier}
+%\VignettePackage{geNetClassifier}
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{Sweave} %modify for your R home directory
+\usepackage{amsmath}
+\usepackage{hyperref}
+%\usepackage[authoryear,round]{natbib}
+\usepackage{authblk}
+\usepackage{anysize}
+\usepackage{float}
+\usepackage[font=small, labelfont=bf, labelsep=period]{caption}
+\setlength{\captionmargin}{30pt}
+
+\marginsize{1in}{1in}{0.5in}{0.5in}
+\setlength{\parindent}{0pt}
+
+\pagestyle{myheadings}
+\markright{geNetClassifier\hfill}
+
+\title{\textit{geNetClassifier}\\ classify multiple diseases and build associated gene networks using gene expression profiles}
+\author{Sara Aibar}
+\author{Celia Fontanillo}
+\author{Conrad Droste}
+\author{Javier De Las Rivas}
+\affil{Bioinformatics and Functional Genomics Group\\ Centro de Investigacion del Cancer (CiC-IBMCC, CSIC/USAL)\\ Salamanca - Spain}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\maketitle 
+\begin{center}
+Version: 1.0
+\end{center}
+\tableofcontents
+
+
+
+\newpage
+\section{Introduction to \textit{geNetClassifier}}
+\label{sec:intro}
+\textit{geNetClassifier} is an algorithm designed to build transparent classifiers and the associated gene networks based on genome-wide expression data. \\
+
+%Its main function is also named \textit{geNetClassifier}. 
+\textit{geNetClassifier()} is also the name of the main function in the package. This function takes as input the \textit{expressionSet} or expression matrix of the studied samples and the classes the samples belong to (i.e. the diseases or disease subtypes). Once the data are analyzed, geNetClassifier() provides: \textbf{(i)} ranked gene sets (or gene signatures) that identify each class; \textbf{(ii)} a multiple-class classifier; and \textbf{(iii)} gene networks associated to each class.
+\begin{itemize}
+\item Gene ranking:  The genes, probesets, or any other variables that are input in the \textit{expressionSet} are considered \textit{features} for the classification. These features are analyzed by \textit{geNetClassifier}, and ranked according to the class they best identify, in order to select the optimum set for training the classifier. This ranking is returned by \textit{geNetClassifier()} as well as the parameters calculated for gene selection. 
+% features = genes from now on.
+
+\item Classifier: \textit{geNetClassifier()} also returns a multi-class SVM-based classifier, which can be queried later on; the genes (features) chosen for classification; their discriminant power (a parameter that measures the importance that the classifier internally gives to each gene); and, optionally, the classifier's generalization error and statistics about the selected genes.
+
+\item Network: The mutual-information (interactions) and the co-expression (correlations) between the genes are also calculated and analyzed by the algorithm. These allow to estimate the degree of association between the variables and they are used to generate a gene network for each class. These networks can be plotted, providing a integrated overview of the genes that characterized each disease (i.e. each class).
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Fig1intro}
+  \caption{Taking an \textit{expressionSet} as input, \textit{geNetClassifier()} returns a gene signature for each class, a classifier to discriminate the classes, and gene networks associated to each class. The package also includes several analytic and visualizing tools to explore these results.}
+  \label{fig:intro}
+\end{figure}
+
+\textbf{Examples of use}\\
+
+The algorithm shows a robust performance applied to patient-based gene expression datasets that study disease subtypes or disease classes. In this vignette, we show such performance for a leukemia dataset that includes 60 microarray samples from bone marrow of patients with four major leukemia subtypes (ALL, AML, CLL, CML) and no-leukemia controls (NoL). The results outperform a previously published classification analysis of these data \cite{mile}.\\ 
+
+
+The method is designed to be applied to the analysis and classification of different disease subtypes. Therefore in the R package and this vignette all the explanations and examples are disease-oriented. However, \textit{geNetClassifier} can be applied to the classification of any other type of biological states, pathological or not.\\
+
+In the same way, although the examples in this vignette are based on gene expression microarrays, many other types of data could be used as input. Current biomedical literature is full of genome-wide studies of different human disease samples using expression microarrays or other platforms (like RNA-seq). Any of these types of studies can be used as input for \textit{geNetClassifier()}.\\
+
+\textbf{Methods}\\
+
+The algorithm \textit{geNetClassifier()} integrates several existing machine learning and statistical methods. The \textit{feature ranking} is achieved based on a Parametric Empirical Bayes method (PEB). Double-nested internal cross-validation (CV) \cite{barrier} is used for the \textit{feature selection} process and to estimate the \textit{generalization error} of the classifier. The machine learning method implemented in the classifier is a multi-class Support Vector Machine (SVM) \cite{meyer}. The gene \textit{networks} are built calculating the relations derived from gene to gene co-expression analysis (using \textit{Pearson correlation}) and the interactions derived from gene mutual information analysis (using \textit{minet} package) \cite{minet}. More details about these methods are available in the appropriate sections.\\
+
+\textbf{Queries}\\
+
+\textit{geNetClassifier} includes a \textit{query} function that allows either validation of the classifiers using external independent samples of known class (section \ref{sec:extVal}) or classification of new samples whose class is unknown (section \ref{sec:prediction}). This function facilitates the application of the classification algorithm as a predictor for new samples and it is designed to resemble expert behavior since it allows \textit{NotAssigned} (NA) instances when it is not sure about the class labelling. In order to assign a sample to a class, the algorithm requires a minimum certainty (i.e. probability), leaving it unassigned in case it does not achieve a clear call to a single class. These probability thresholds can be tuned to achieve a more or less stringent assignment. By following this procedure, the algorithm emulates human experts in the decision-making.\\ 
+
+
+
+\newpage
+\section{Install the package and example data}
+\label{sec:installation}
+To install \textit{geNetClassifier} from \textit{Bioconductor}:
+<<eval=FALSE>>=
+source("http://bioconductor.org/biocLite.R")
+biocLite("geNetClassifier")
+@ 
+
+%The package requires the installation of other packages that are usually automatically installed with it using Bioconductor: \textit{Biobase}, \textit{BiocGenerics}, \textit{EBarrays}, \textit{lattice}, \textit{minet} and \textit{infotheo}. \textit{igraph} and \textit{RColorBrewer} are optional, but highly recommended in order to get full functionality of geNetClassifier, including the plots. 
+
+To follow the examples presented in this \textit{Vignette}, we also need to install a sample dataset called \textit{leukemiasEset}:
+<<eval=FALSE>>=
+biocLite("leukemiasEset")
+@
+
+This dataset contains an \textit{expresssionSet} built with 60 gene expression microarrays (HG-U133 plus 2.0 from \textit{Affymetrix}) hybridized with mRNA extracted from bone marrow biopsies of patients of the 4 major types of leukemia (ALL, AML, CLL and CML) and from non-leukemia controls (NoL). These data was produced by the Microarray Innovations in LEukemia (MILE) research project \cite{mile} and are available at GEO, under accession number GSE13159. The selected samples are labeled keeping their source GEO IDs.\\
+
+To have an overview of this \textit{ExpressionSet} and its available info:
+<<>>=
+library(leukemiasEset)
+data(leukemiasEset)
+leukemiasEset
+@
+<<>>=
+summary(leukemiasEset$LeukemiaType) 
+@
+<<eval=FALSE>>=
+pData(leukemiasEset)
+@
+For further information/help about this \textit{ExpressionSet}:
+<<eval=FALSE>>=
+?leukemiasEset
+@
+
+CEL files were preprocessed using an alternative Chip Description File (CDF), which allows mapping the expression directly to genes (Ensembl IDs ENSG) instead of \textit{Affymetrix} probesets. This alternative CDF, with redefines gene-based annotation files for the \textit{Affymetrix} expression microarrays, can be found in \textit{GATExplorer} (bioinformatic web platform and tool that integrates a gene loci browser with nucleotide level re-mapping of the oligo \textit{probes} from \textit{Affymetrix} expression microarrays to genes: mRNAs and ncRNAs)\cite{gatexplorer}.\\
+
+To translate these Ensembl gene IDs into Gene Symbols for easier reading, the optional argument \textit{geneLabels} from \textit{geNetClassifier} can be used. This option allows to extend the annotation and labelling of the genes by providing a table that contains the gene symbol and other characteristics of the genes in the \textit{expresssionSet}. This option can be used with any annotation (i.e. Bioconductor's \textit{org.Hs.eg.db} package) as long as it is provided in the correct format. However, for increased consistency between versions, when using \textit{GATExplorer} CDF, we recomend to also use \textit{GATExplorer} annotation files. Annotation files with the Gene Symbol corresponding to each Ensembl gene ID can be found at: \begin{small}\url{http://bioinfow.dep.usal.es/xgate/mapping/mapping.php?content=annotationfiles}\end{small}. The one used in this example is the \textit{Human Genes} R annotation file. Once it is downloaded, unzip in your working directory, and load it into your R session:
+<<eval=FALSE>>=
+load("genes-human-annotation.R")
+geneSymbols <- genes.human.Annotation[,"gene_symbol",drop=F]
+head(geneSymbols)
+@
+
+This annotation file provides further information which can be used to filter the genes. i.e. To consider only protein-coding genes for the construction of \textit{geNetClassifier}, use the following filter:
+<<eval=FALSE>>=
+leukEset_protCoding <- leukemiasEset[featureNames(leukemiasEset) 
+ %in% rownames(genes.human.Annotation[genes.human.Annotation$biotype 
+ %in% "protein_coding",]),]
+dim(leukemiasEset)
+dim(leukEset_protCoding)
+@
+
+Please note that \textit{geNetClassifier} is designed to work with genes. In case the expression data is not summarized into genes, but it uses for example the \textit{Affymetrix} defined \textit{probesets} instead, \textit{geNetClassifier} can still be used but those \textit{probesets/features} will still be called \textit{'genes'}.
+
+
+
+\section{Main function of the package: \textit{geNetClassifier()} }
+\label{sec:geNetClassifier}
+\textit{geNetClassifier()} is the main function of the package. It builds the classifier and the gene network associated to each class, and also returns the genes ranking and further information about the selected genes.\\
+
+The workflow internally followed by \textit{geNetClassifier()} includes the following steps:\\ \\
+\textbf{1.-} Filtering data and calculating the genes ranking.\\
+\textbf{2.-} Calculating correlations between genes.\\
+\textbf{3.-} Calculating interactions between genes.\\
+\textbf{4.-} Construction of the classifier: first 8-fold \textit{cross-validation} to optimize the gene selection (first loop of CV), followed by the training of the classifier (that uses the complete set of samples and it can be done removing or maintaining the redundant genes detected by the analyses of association/relation between genes).\\
+\textbf{5.-} Estimation of performance: calculates the \textit{generalization error} of the classifier and the statistics about the genes using a second 5-fold \textit{cross-validation} (second loop of CV).\\
+\textbf{6.-} Construction of the gene networks: a gene network is built for each one of the classes using the calculated gene associations (the pairwise gene-to-gene correlations and interactions).\\
+\textbf{7.-} Writing and saving the results including a series of plots for visualization.\\
+
+The following sections show: \textbf{(\ref{sec:load})} how to load the package and the data; \textbf{(\ref{sec:run})} how to run the algorithm; \textbf{(\ref{sec:returns})} an overview of the results and returned data: (\textbf{\ref{sec:ranking}}) the genes ranking, (\textbf{\ref{sec:classifier}}) the classifier and (\textbf{\ref{sec:networks}}) the gene networks.
+
+
+\subsection{Load the package and data}
+\label{sec:load}
+In order to have \textit{geNetClassifier} functions available, the first step is to load the package:
+<<results=hide>>=
+library(geNetClassifier)
+@
+To list all available tutorials for this package, or to open this \textit{Vignette} you can use:
+<<eval=FALSE>>=
+# List available vignettes for package geNetClassifier: 
+vignette(package="geNetClassifier")
+# Open vignette named "geNetClassifier-vignette":
+vignette("geNetClassifier-vignette")
+@
+To list all the available functions and objects included in \textit{geNetClassifier} use  the function \textit{objects()}. Typing its name with a question mark (?) before any function, will show its help file. Through this tutorial, we will see how to use the main ones:
+<<eval=TRUE, echo=FALSE>>=
+options(width=80)
+@
+<<>>=
+objects("package:geNetClassifier")
+@
+<<eval=FALSE>>=
+?geNetClassifier
+@
+Once the package is loaded, the next step is to load the data to analyse. In this example, we use \textit{leukemiasEset}: 60 microarrays from bone marrow from patients of the 4 major types of leukemia (ALL, AML, CLL, CML) and from healthy non-leukemia controls (NoL).(For installation and further information regarding \textit{leukemiasEset} data package see Section \ref{sec:installation}).
+<<eval=FALSE>>=
+library(leukemiasEset)
+data(leukemiasEset)
+@
+Of course, you can use your own dataset instead:
+<<eval=FALSE>>=
+load(file="...")
+@
+Then, select the samples to train the classifier. Note that to run \textit{geNetClassifier} there should be the \textbf{same number of samples in each class}. A balanced number of samples allows an even exploration of each class and provides better classification. \\
+
+In \textit{leukemiasEset} there are 60 samples: 12 of each class (ALL, AML, CLL, CML and NoL). We will select 10 samples from each class to execute \textit{geNetClassifier()}, and leave 2 for external validation of the resulting classifier. In this way, it makes a total of 50 samples for the \textit{training} and 10 samples for the \textit{validation}.
+<<>>=
+trainSamples <- c(1:10, 13:22, 25:34, 37:46, 49:58)
+summary(leukemiasEset$LeukemiaType[trainSamples])
+@
+
+
+\subsection{Run \textit{geNetClassifier()} }
+\label{sec:run}
+As indicated, to run the algorithm \textit{geNetClassifier} there is a main R function called with the same name: \textit{geNetClassifier()}. The essential input elements that this function needs are:
+\begin{quote}
+1.- An \textit{expressionSet}: R object defined in Bioconductor that contains a genome-wide expression matrix with data for multiple samples; see \textit{?ExpressionSet}.
+
+2.- The \textit{sampleLabels}: a vector with the class name of each sample or the \textit{ExpressionSet phenoData} object containing this information.
+\end{quote}
+
+The algorithm input also includes many other arguments that allow to personalize the execution or modify some of the parameters internally used. All of them have a default value and there is no need to modify them. In the following step we will see examples on how to use the main ones. Information about them can be found using the help options (i.e. \textit{?geNetClassifier}). This is the full list of arguments with their default values:
+
+\begin{quote}
+\begin{small}
+\begin{verbatim}
+geNetClassifier(eset, sampleLabels, plotsName=NULL, buildClassifier=TRUE, 
+estimateGError=FALSE, calculateNetwork=TRUE, labelsOrder=NULL, 
+geneLabels=NULL, numGenesNetworkPlot=100, minGenesTrain=1, 
+maxGenesTrain=100, continueZeroError=FALSE, numIters=6, lpThreshold=0.75, 
+numDecimals=3, removeCorrelations=FALSE, correlationsThreshold=0.8, 
+removeInteractions=FALSE, interactionsThreshold=0.5, 
+skipInteractions=FALSE, minProbAssignCoeff=1, minDiffAssignCoeff=0.8, 
+IQRfilterPercentage=0, precalcGenesNetwork=NULL, precalcGenesRanking=NULL, 
+returnAllGenesRanking=TRUE, verbose=TRUE) 
+\end{verbatim}
+\end{small}
+\end{quote}
+
+Several examples to run \textit{geNetClassifier()} are presented below. To train the classifier takes a while. Some approximate times are indicated with each run:
+\begin{itemize}
+\item{Run with the parameters by default: \textit{buildClassifier=TRUE}, \textit{calculateNetwork=TRUE}. This is the most basic execution, it only requires the \textit{expressionSet} and the \textit{sampleLabels}. The \textit{plotsName} is also provided in order to produce the output plots. (It takes about 10 minutes in a standard PC):}
+<<eval=FALSE>>=
+leukemiasClassifier <- geNetClassifier(eset=leukemiasEset[,trainSamples], 
+sampleLabels="LeukemiaType", plotsName="leukemiasClassifier") 
+@
+\item{Run with the default parameters but estimating the classifier's performance: \textit{estimateGError=TRUE}. (It takes longer, about 20 minutes in a standard PC):}
+<<eval=FALSE>>=
+leukemiasClassifier <- geNetClassifier(eset=leukemiasEset[,trainSamples], 
+sampleLabels="LeukemiaType", plotsName="leukemiasClassifier", 
+estimateGError=TRUE)
+@
+\item{Run a faster execution without estimation of the classifier's performance, without calculation of the interactions between the genes (\textit{skipInteractions=TRUE}) and reducing the number of genes to explore when training the classifier (by default: \textit{maxGenesTrain=100}). (This reduces the execution time to about 5 minutes in a standard PC):}
+<<eval=FALSE>>=
+leukemiasClassifier <- geNetClassifier(eset=leukemiasEset[,trainSamples], 
+sampleLabels="LeukemiaType", plotsName="leukemiasClassifier", 
+skipInteractions=TRUE, maxGenesTrain=20, geneLabels=geneSymbols)
+@
+\end{itemize}
+
+Some of the parameters allow to provide extra information for an easier reading of the results: \textit{labelsOrder} allows to show and plot the classes in a specific order (i.e. \textit{labelsOrder=c('ALL', 'CLL', 'AML', 'CML', 'NoL')}) and \textit{geneLabels} can be used to show other type of gene name in the output rankings and plots (the labels by default are the IDs provided by the \textit{ExpressionSet}). In the example, the genes were labelled with the gene symbols provided by \textit{GATExplorer} gene-based probe mapping (\textit{geneLabels=geneSymbols}), as it was indicated in section \ref{sec:load}.\\
+
+After running \textit{geNetClassifier()}, the output can be saved:
+<<eval=FALSE>>=
+save(leukemiasClassifier, file="leukemiasClassifier.RData") 
+@
+
+The saved result can be loaded at any time. The functions \textit{getwd()} and \textit{dir()} can be used to make sure that R is working in the right directory:
+<<eval=FALSE>>=
+getwd()
+dir()
+load("leukemiasClassifier.RData")
+@
+
+To avoid waiting now for the construction of a new classifier and to continue this tutorial, a pre-executed example included in the package with the same name (\textit{leukemiasClassifier}) can be loaded:
+<<eval=TRUE, echo=TRUE>>=
+data(leukemiasClassifier) 
+@
+
+This pre-executed classifier was built running the following code:
+<<eval=FALSE>>=
+leukemiasClassifier <- geNetClassifier(leukEset_protCoding[,trainSamples],
+sampleLabels="LeukemiaType", plotsName="leukemiasClassifier",
+ estimateGError=TRUE, geneLabels=geneSymbols)
+@
+
+
+\subsection{Overview of the data returned by \textit{geNetClassifier()}}
+\label{sec:returns}
+
+As indicated above, the main results that \textit{leukemiasClassifier()} provides are: (\textbf{\ref{sec:ranking}}) the \textbf{genes ranking}, (\textbf{\ref{sec:classifier}}) the \textbf{classifier} and (\textbf{\ref{sec:networks}}) the \textbf{gene networks}. All this information is returned by \textit{geNetClassifier()} in an object of class \textit{GeNetClassifierReturn}, which contains several slots.
+<<>>=
+class(leukemiasClassifier)
+@
+
+The available slots in the returned object can be seen with the function names():
+<<eval=TRUE, echo=FALSE>>=
+options(width=50)
+@
+<<>>=
+names(leukemiasClassifier)
+@
+<<eval=TRUE, echo=FALSE>>=
+options(width=80)
+@
+
+The slot @call contains the R sentence that has been used to execute \textit{geNetClassifier()}. It is the only slot that will always be returned by \textit{geNetClassifier()}, the presence and contents of the other components returned by the algorithm will depend on the arguments that are setup to run it. 
+%<<eval=FALSE>>=
+<<>>=
+leukemiasClassifier@call
+@
+
+All the outputs and returned components are explained in detail in the following sections: @genesRanking in section \ref{sec:ranking}; @classifier, @classificationGenes and @generalizationError in section \ref{sec:classifier}; and @genesNetwork in section \ref{sec:networks}. The \textbf{plots} are explained in section \ref{sec:plots}. A general view of the output can be seen by just typing the assigned name:
+<<>>=
+leukemiasClassifier
+@
+
+
+\subsection{Return I: Genes ranking}
+\label{sec:ranking}
+The first step of \textit{geNetClassifier} algorithm is to produce a ranking of genes -per class- based in the analysis of the expression signal. To create this ranking, it runs the Parametric Empirical Bayes method \cite{morris} included in package \textit{EBarrays} \cite{EBarrays}. This method implements an expectation-maximization (EM) algorithm for gene expression mixture models (function \textit{emfit}) that allows to find the genes that show significant differential expression when comparing the samples of one class \textit{versus} all the other samples (i.e. One-versus-Rest comparison, OvR). The EM method allows to calculate \textit{posterior probabilities} of patterns of differential expression across multiple conditions, to calculate the posterior probabilities for each gene-class pair. These posterior probabilities represent how much each gene differentiates each one of the classes from the other classes, being 1 the best value, and 0 the worst (so they can be seen as $ 1 - pValue$).
+Besides calculating the posterior probabilities for each gene for each class, \textit{geNetClassifier} also takes into account the possibility that some genes might not provide difference between classes. Those genes with a posterior probability greater or equal to 0.95 for the 'no difference', are filtered out before proceeding into further steps.\\
+
+A first version of the ranking is built by ordering the genes decreasingly by their posterior probability for each class. However, in this ranking there might be ties. In order to rank the genes within the ties, \textit{geNetClassifier} uses the expression difference between the mean for each gene in the given class and the mean in the closest class.\\
+
+To optimize specificity for the classes, the gene ranking is built with the condition that \textbf{each gene can only be on the ranking of one class}. If a gene is found significant for several classes during the expression analysis, it is assigned only to the class in which it has the best ranking. In this way the separation between classes is optimized and the method will choose first the genes that best differentiate any of the classes. As a result of this process the ranking includes different genes for each class.\\ 
+
+The genes ranking obtained for each class is used for the gene selection in the classification procedure and it is also provided as an output of \textit{geNetClassifier()} in the slot: ...@genesRanking. 
+<<>>=
+leukemiasClassifier@genesRanking
+@
+
+This ranking is provided as an object of the class \textit{GenesRanking}. This class provides some utility functions which will help working with the information contained in the object. The total number of genes contained in the ranking for each class can be queried using the function \textit{numGenes()}. These numbers include all the genes that have some ability to distinguish between classes, although only the top ones are really significant.
+<<>>=
+numGenes(leukemiasClassifier@genesRanking)
+@
+
+With \textit{getTopRanking()} a subset of the ranking containing only the given number of top genes can be obtained. Since the returned object is also a \textit{GenesRanking} object, no information is lost and other functions (i.e. \textit{genesDetails()}) can later be used.
+<<>>=
+miniRanking <- getTopRanking(leukemiasClassifier@genesRanking, 6)
+@
+
+In order to retrieve the whole ranking in the form of a matrix (i.e. to print the full version or get a subset of it), the function \textit{getRanking()} can be used. This function provides the option to show the ranking with the gene IDs or the gene Labels.
+<<>>=
+getRanking(miniRanking)
+@
+%\newpage
+<<>>=
+getRanking(miniRanking, showGeneID=TRUE)$geneID
+@
+
+The function \textit{genesDetails()} allows to show all the available info of the genes in the ranking.
+<<>>=
+genesDetails(miniRanking)$AML
+@
+
+NOTE: If the console splits the table into several lines, try:
+<<eval=FALSE>>=
+options(width=200)
+@ 
+
+By default, the genes in \textit{geNetClassifier} are named with the ID included in the \textit{expressionSet}: in our case the ENSEMBL IDs, as shown in the \textit{rownames} of the data frame above. The \textit{GeneName} column has been added in the construction of \textit{geNetClassifier} using the argument \textit{geneLabels=geneSymbols} as indicated in section \ref{sec:run}. To see the description of the column labels provided in this table write: \textit{?genesDetails}. The R documentation about \textit{GenesRanking} class can be queried writing: \textit{?GenesRanking}.
+
+%\newpage
+\subsubsection{Significant genes}
+\label{sec:significantGenes}
+
+The analyses of the distributions of genes within the ranking allows to compare the classes and identifying the set of genes assigned to each class at a given threshold of significance (provided by the posterior probability cutoff). In this way, the algorithm provides a framework to compare the biological states studied, i.e. the biological or pathological conditions tested in the classes.\\
+
+The package \textit{geNetClassifier} returns an output plot of the distribution of rankings \textit{versus} the posterior probabilities for each class. The plot includes a threshold of posterior probability \textit{lpThreshold=0.75} (which can be changed by the user) and indicates the genes considered 'significant' for each one of the analyzed classes. This analysis of the ranking provides a way to find the size of the \textit{gene signature} assigned to each disease, compared to the other diseases studied in the same study.\\
+
+\begin{figure}[H]
+      \centering
+      \includegraphics[width=0.7\textwidth]{Fig2significantGeneswithoutNoL}
+  \caption{Plot of the posterior probabilities of the genes of 4 leukemia classes, ordering the genes according to their rank.}
+  \label{fig:significantGeneswithoutNoL}
+\end{figure}
+
+The analysis of the genes ranking done for the 4 leukemia subtypes included in the example dataset shows that some disease subtypes, e.g. CLL, include many genes (2028 genes at lpThreshold 0.75) but other subtypes, e.g. AML, include less genes (308 genes). A much larger \textit{gene signature} may indicate that CLL is a more \textit{systemic} disease by affecting many more genes than AML. These observations are clear, but the biological interpretation may not be so clear. In any case, the results provided by \textit{geNetClassifier} algorithm may help to unravel disease sub-types differences based on the gene signatures.\\
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{Fig3overlap}
+  \caption{Scheme representing the overlap between the sets of genes that each disease may affect. \textit{geNetClassifier} explores all the genes that affect each disease (\textbf{ovals}) and selects the genes that are unique (differentially expressed) to each disease. In this way, the selected genes (\textbf{circles}) represent the significant genes for each disease (i.e. the genes with posterior probability over the threshold found for each class) .
+    }
+%    Scheme representing the overlap between the gene sets affected by each disease (ovals). \textit{geNetClassifier} identifies the genes that are unique (differentially expressed) in each disease. The filled ovals represent the significant genes for each disease (genes with posterior probability over the threshold
+    %The number of genes over the common posterior probability threshold shows the size of each gene set. This size reflects the number of genes affected uniquely in each of the diseases.
+  \label{fig:overlap}
+\end{figure}
+
+The number of significant genes with posterior probability over the threshold (by default \textit{lpThreshold=0.75}) are provided using \textit{numSignificantGenes}:
+% numGenes(leukemiasClassifier@genesRanking)
+<<>>=
+numSignificantGenes(leukemiasClassifier@genesRanking)
+@
+
+The posterior probabilities plot is the default plot for the object of class \textit{GenesRanking}:
+<<eval=FALSE>>=
+plot(leukemiasClassifier@genesRanking)
+@
+
+The threshold can be modified, for example setting it up to 0.80. More details about this plot can be seen in section \ref{sec:plotSignificantGenes}.
+<<eval=FALSE>>=
+plot(leukemiasClassifier@genesRanking, 
+numGenesPlot=3000, lpThreshold=0.80)
+@
+
+
+\newpage
+\subsection{Return II: Classifier}
+\label{sec:classifier}
+
+The information regarding the classifier is saved into the slots: @classifier, @classifcationGenes and @generalizationError.\\
+
+The \textit{@classifier} slot contains the SVM classifier that can later be used to make queries. The SVM method included in the algorithm is a linear kernel implementation from R package \textit{e1071}. This implementation allows multi-class classification by using a One-versus-One (OvO) approach, in which all the binary classifications are fitted and the correct class is found based on a voting system. 
+
+<<eval=TRUE>>=
+leukemiasClassifier@classifier
+@
+
+The final genes selected to build the classifier are in slot: \textit{@classificationGenes}. This object \textit{@classificationGenes} belongs to the class \textit{GenesRanking}, so functions such as \textit{numGenes()} or \textit{genesDetails()} can be used with it.
+<<>>=
+leukemiasClassifier@classificationGenes
+@
+<<>>=
+numGenes(leukemiasClassifier@classificationGenes)
+genesDetails(leukemiasClassifier@classificationGenes)$ALL
+@
+
+% and, if available, about the generalization error (section \ref{sec:GE}) $
+
+Note that besides the common information about the genes provided by the genes ranking (section \ref{sec:ranking}), the classification genes also have information about the discriminant power calculated for each gene and the class that best discriminate (section \ref{sec:plotDiscriminantPower}).\\
+
+As indicated in the introduction, \textit{geNetClassifier} algorithm includes a double-nested internal cross-validation method, that implements two loops of CV: a first one (8-fold) used for the \textit{gene selection} and a second one (5-fold) used for the estimation of the performance and calculation of the \textit{generalization error}. The next two sections explain the \textit{gene selection procedure} \ref{sec:geneSelect} and the \textit{estimation of performance and generalization error procedure} \ref{sec:GE}. 
+
+
+%\newpage
+\subsubsection{Gene selection procedure}
+\label{sec:geneSelect}
+
+The optimum number of \textit{genes selected} for each class to build the classifier is calculated during the first cross-validation. This cross-validation (set up to 8-fold) is used to evaluate the classifiers trained with an increasing number of genes. Starting with the first ranked gene of each class, one more gene is added in each step to those classes for which a 'perfect prediction' is not achieved (i.e. not all samples correctly identified). The genes are taken in order step-by-step from the \textit{genes ranking} of each class until any of the classes reaches a fixed maximum number of genes (\textit{maxGenesTrain=100}) or until zero error is reached (\textit{continueZeroError=FALSE}). The error for each of the classifiers built and the number of genes used to construct them are saved. As a result of this procedure, the minimum number of genes per class which produced the classifier with minimum error are selected.
+
+\begin{figure}[H]
+      \centering
+      \includegraphics[page=1, width=0.9\textwidth]{Fig4-5geneSelection}
+  \caption{ Plot of the gene-selection iterations. Each line represents an iteration and the error rates observed for each number of genes (starting at 5, one per class). The algorithm runs until exploring a maximum number of genes of 100 in any class (\textit{maxGeneTrain=100}) or until zero error is reached (\textit{continueZeroError=FALSE}). In each iteration the minimum number of genes with minimum error is selected. }
+  \label{fig:geneSelectionIterations}
+\end{figure}
+
+To achieve the best stability in the number of selected genes, the gene-selection procedure is not run just once, but it is repeated several times with new samplings of microarrays (i.e. changing the samples used). This process is repeated as many times as indicated by the optional parameter \textit{numIters}; and it is setup by default to 6. In each of these iterations, the minor number of genes that provided the smallest error is selected. The number of genes selected in each of the iterations is then analyzed in order to identify the most stable number of genes for each class, avoiding to select a number of genes far from the mean observed in these 6 iterations (i.e. avoiding a number of genes considered \textit{outlier} with respect to the other iterations). The errors calculated for each one of the 6 gene-selections iterations and the number of genes are represented in figure \ref*{fig:geneSelectionIterations}. The number of genes per class selected in each of the 6 iterations are presented in figure \ref*{fig:numberGenesSelectedEachIter}. These calculations are done for the example dataset of leukemia samples provided in this \textit{Vignette}.\\ 
+
+\begin{figure}[H]
+      \centering
+      \includegraphics[page=2, width=0.9\textwidth]{Fig4-5geneSelection}
+  \caption{ Plot of the number of genes selected in each iteration. The bars represent the number of genes with minimum error rates in each iteration. Each color represents an iteration. The filled bar is the final number of genes of each class selected to train the classifier.}
+  \label{fig:numberGenesSelectedEachIter}
+\end{figure}
+
+
+\subsubsection{Estimation of performance and generalization error procedure}
+\label{sec:GE}
+
+The estimation of the \textit{generalization error} (GE) of the classification algorithm is an option that can be included using the parameter \textit{estimateGError=TRUE}. When this option is chosen, an independent validation is simulated by adding a second loop of cross-validation (CV) around the construction of the classifier. In each iteration of this loop, a few samples are left out of the \textit{training} and used as \textit{test} samples. This step allows to estimate and provide statistics and metrics regarding the quality of the classifier and the genes selected for classification. The parameters measured for the classifier are the following:\\ 
+
+- \textbf{Sensitivity}: Proportion of samples from a given class which were correctly identified. In statistical terms it is the rate of true positives (TP). \textit{Sensitivity} relates to the ability of the test to identify positive results.\\
+
+$ Sensitivity =  \dfrac{TP}{TP + FN} = True  Positive  Rate $\\
+
+- \textbf{Specificity}: Proportion of samples assigned to a given class which really belonged to the class. In statistical terms it is the rate of true negatives (TN). \textit{Specificity} relates to the ability of the test to identify negative results.\\
+
+$ Specificity =  \dfrac{TN}{TN + FP} = True  Negative  Rate $\\
+
+Note: In order to truly evaluate the classification, both sensitivity and specificity need to be taken into account. For example, 100\% sensitivity for AML will be achieved by assigning all AML samples to AML. In the same way, 100\% specificity will be achieved by not assigning any sample from other class to AML. Therefore, the classification will only be reliable if both -sensitivity and specificity- are optimized, by identifying all samples from one class while not having samples from another classes miss-classified. \\
+
+- \textbf{Matthews Correlation Coefficient} (MCC): It is a measure which takes into account both true and false positives and negatives. It is generally regarded as a balanced measure of performance. In machine learning it is used as a measure of the quality of binary classifications. \\
+
+$ MCC = \dfrac{TP\times TN - FP\times FN}{\sqrt{(TP+FP)(TP+FN)(TN+FP)(TN+FN)}} $\\ \\
+
+- \textbf{Global Accuracy}: Proportion of true results within the assigned samples.\\ 
+
+- \textbf{Call Rate per class and Global Call Rate}: Proportion of \textit{assigned} samples within a class or in the whole prediction.\\ 
+
+$ Call Rate =  \dfrac{Assigned}{Assigned + Not Assigned} $\\
+
+The results about the estimation of performance and the generalization error are saved in the slot: \textit{@generalizationError}
+<<>>=
+leukemiasClassifier@generalizationError
+@
+To see all the available info gathered during estimation of performance use the \textit{overview()} function:
+<<eval=FALSE>>=
+overview(leukemiasClassifier@generalizationError)
+@
+
+This object contains all the information regarding estimation of performance in different slots: \textit{@accuracy}, \textit{@sensitivitySpecificity}, \textit{@confMatrix}, \textit{@probMatrix}, \textit{@querySummary}.\\
+
+The slot \textit{...@confMatrix} contains the confusion matrix. A confusion matrix is a table used to quickly visualize and evaluate the performance of a classification algorithm. The rows represent the real class of the samples, while the columns represent the class to which the samples were assigned. Therefore, the correctly assigned samples are in the diagonal.
+<<>>=
+leukemiasClassifier@generalizationError@confMatrix
+@
+
+The slot \textit{...@probMatrix} presents the probabilities of assignment to each class that are calculated during the 5-fold cross-validation. This \textit{probability matrix} provides a good estimation of how easy or difficult is to assign each sample to its class. It also provides an indication about the likelihood to confuse one class with others:
+<<>>=
+leukemiasClassifier@generalizationError@probMatrix
+@
+
+The slot \textit{...@classificationGenes.stats} includes calculations about the number of times that each gene was selected for classification in the 5-fold cross-validation executions: \\%To query the classification statistics of the top genes for a given class use $class.  
+- \textit{timesChosen}, number of times that each gene is chosen for classification in the 5 CV.\\
+- \textit{chosenRankMean}, average rank of the gene only within the CV loops in which the gene was chosen for classification.\\
+- \textit{chosenRankSD}, standard deviation of the gene rank only within the CV loops in which the gene was chosen for classification.\\ 
+- \textit{geRankMean}, average rank of the gene in the 5 CV loops performed during the generalization error estimation.\\
+- \textit{geRankSD}, standard deviation of the rank of the gene in the 5 CV loops performed during the generalization error estimation.
+<<>>=
+leukemiasClassifier@generalizationError@classificationGenes.stats$CLL
+@
+%$
+
+The slot \textit{...@classificationGenes.num} includes calculations about the number of genes selected for each class in the 5 runs of the 5-fold cross-validation applied for the estimation of performance. These numbers allow to explore the number of genes that are used per class. However, the proper calculation of the final \textit{number of genes} selected for each class in the classifier is done with the other 8-fold cross-validation which includes all the available samples (as indicated in section \ref{sec:geneSelect}).
+<<>>=
+leukemiasClassifier@generalizationError@classificationGenes.num
+@
+
+%\newpage
+\subsection{Return III: Gene networks}
+\label{sec:networks}
+Together to the classifier and the genes ranking, the third major result that the algorithm \textit{geNetClassifier} produces are the gene networks associated to each class.\\ 
+
+The gene networks for each class are built based on association parameters between genes. These association parameters are gene to gene co-expression calculated using \textit{Pearson correlation coefficient} (PCC) and gene to gene interactions derived from \textit{mutual information} (MI) analysis (\textit{mi.empirical} entropy estimator from the R package minet \cite{minet}); both calculated along all the samples of each class of the studied dataset.\\ 
+
+The \textit{correlations} and \textit{interactions} also allow to find possible redundancy between the genes as features in the classification procedure. Such redundancy can be proven by producing comparative classifiers that include or not the associated genes. As expected, we observed that classifiers without redundant genes need less features for classification.\\ 
+
+The \textit{...@genesNetwork} slot contains the list of networks. 
+%options(width=70)
+<<>>=
+leukemiasClassifier@genesNetwork
+overview(leukemiasClassifier@genesNetwork$AML)
+@
+%$
+
+Each of the networks in this list is an object of the class \textit{GenesNetwork}. This class offers some functions to retrieve and count the edges and nodes, and also to subset the network (\textit{getSubNetwork()}). Note that \textit{getNodes()} includes all possible nodes even if they are no linked by edges. 
+<<>>=
+getNumEdges(leukemiasClassifier@genesNetwork$AML)
+getNumNodes(leukemiasClassifier@genesNetwork$AML)
+@
+<<>>=
+getEdges(leukemiasClassifier@genesNetwork$AML)[1:5,]
+getNodes(leukemiasClassifier@genesNetwork$AML)[1:12]
+@
+
+The function \textit{network2txt()} allows to save or export the networks as text files. This function produces two text files: one with the information about the \textit{nodes} and another with the information about the \textit{edges}. They are flat text files (.txt). In the case of the \textit{edges} file, it includes the nodes that interact (gene1 -- gene2), the type of link (correlation or interaction) and the value of such relation. 
+<<eval=FALSE>>=
+network2txt(leukemiasClassifier@genesNetwork, filePrefix="leukemiasNetwork")
+@
+To produce just the files with the information about the \textit{edges}:
+<<eval=FALSE>>=
+geneNtwsInfo <- lapply(leukemiasClassifier@genesNetwork, 
+function(x) write.table(getEdges(x), 
+file=paste("leukemiaNtw_",getEdges(x)[1,"class1"],".txt",sep="")))
+@
+
+These flat text files allow to export the networks to external software (e.g. \textit{Cytoscape}, http://www.cytoscape.org). Of course, the networks can also be used with other R packages (e.g. igraph using the  \textit{returniGraphs} option in \textit{plotNetwork()}. See section \ref{sec:plotNetwork}.) or exported using direct R connectors (e.g. RCytoscape). For more information see the class help \textit{?GenesNetwork}. 
+%\newpage
+\section{External validation: query with new samples of known class}
+\label{sec:extVal}
+
+Once a classifier is built for a group of diseases or disease subtypes, it can be queried with new samples to know their class. However, before proceeding with samples whose class is unknown, an external validation is normally performed. An external validation consists on querying the classifier with several samples whose class is \textit{a priori} known, in order to see if the classification is done correctly. As indicated in section \ref{sec:GE}, if the number of known samples is limited (as it is usually the case) to avoid leaving a sub-set of known samples out of the training, \textit{geNetClassifier()} provides the \textit{generalization error} option, which will simulate an external validation by using cross-validation. Despite this possibility, it is clear that using external samples (totally independent to the classifier built) is the best option to validate its performance. \\ 
+
+In this section, we will proceed with an example of external validation with the leukemia's classifier. In \textit{leukemiasEset}, the class of all the available samples is known \textit{a priori}. Since we had 60 samples in the initial leukemia dataset and only 50 were used to train the classifier, the 10 remaining can be used for external validation. \\
+
+The first step is to select the 10 samples that were not used for training:
+<<>>=
+testSamples <- c(1:60)[-trainSamples]
+testSamples
+@
+
+The classifier is then be asked about the class of these 10 samples using \textit{queryGeNetClassifier()}:
+<<>>=
+queryResult <- queryGeNetClassifier(leukemiasClassifier, 
+leukemiasEset[,testSamples])
+@
+
+This query will return the class that each sample has been assigned to, which will be saved into \$class. It also returns the probabilities of assignment of each sample to each class in \$probabilities. 
+<<>>=
+queryResult$class
+queryResult$probabilities
+@
+
+Since the real class of the samples is known, we can create a confusion matrix. Note: For using this matrix as input in upcoming functions the real classes should be placed as row names (\textit{rownames}) and the predicted classes (assigned by the classifier) as column names (\textit{colnames}).
+<<>>=
+confusionMatrix <- table(leukemiasEset[,testSamples]$LeukemiaType, 
+queryResult$class)
+@
+
+Once we have executed the query, \textit{externalValidation.stats()} can be used to calculate the parameters to evaluate the classifier (Section \ref{sec:GE}).
+<<>>=
+externalValidation.stats(confusionMatrix)
+@
+
+The class to class assignment probability matrix, that gives support to the confusion matrix, can be also created for the external validation analysis:
+<<>>=
+externalValidation.probMatrix(queryResult, 
+leukemiasEset[,testSamples]$LeukemiaType, numDecimals=3)
+@
+
+\newpage
+\subsection{Assignment conditions}
+\label{sec:assignment}
+
+The algorithm \textit{geNetClassifier} includes an expert-like approach to decide if a sample is assigned to a class. Using the function \textit{queryGeNetClassifier()} it takes into account the probability of belonging to such class, the amount of classes and the probability for the closest class. These \textit{assignment conditions} parameters can be modified. By default, the probability to belong to a given class should be at least double the \textit{random probability} and the difference with the next likely class should also be higher than 0.8 times the \textit{random probability}.\\ 
+
+For example, to assign a sample in a 5 class classifier, the highest probability should be at least 40\% (2 x 0.20 = 0.40) and the probability of belonging to the closest class should be at least 16\% lower than the highest (0.8 x 0.20 = 0.16). This implies that if a sample's probability to belong to one class is 55\% and to belong to another class is 40\% , the assignment to the first class is not clear enough and it will be left as a \textit{NotAssigned} (NA) sample, because the difference is lower than 16\% . These conditions allow modulation of the \textit{assignment} and the method resembles expert decision-making. \\ 
+
+To implement these conditions \textit{queryGeNetClassifier()} function includes two coefficients: the minimum probability expected for assignment (\textit{minProbAssignCoeff}), and the minimum difference between the probabilities of the first and the second classes (\textit{minDiffAssignCoeff}). By default: \textit{minProbAssignCoeff=1}, meaning that such probability is 1 x 2 x \textit{random probability}; and \textit{minDiffAssignCoeff=0.8}, meaning that such difference is 0.8 x \textit{random probability}. If these two coefficients are set up to 0 (\textit{minProbAssignCoeff=0}, \textit{minDiffAssignCoeff=0}) all samples will be \textit{Assigned} to the most likely class and therefore no samples will be left as \textit{NotAssigned}.
+<<>>=
+queryResult_AssignAll <- queryGeNetClassifier(leukemiasClassifier, 
+leukemiasEset[,testSamples], minProbAssignCoeff=0, minDiffAssignCoeff=0)
+which(queryResult_AssignAll$class=="NotAssigned")
+@
+Remember: One equal symbol (=) is an assignment operator equivalent to \textit{<-}. In order to ask if two elements are the same, two equal symbols (==) need to be used.\\
+
+
+If the coefficients are set up to 1.5 and 1, the minimum probability to be assigned is 0.6 (1.5 x 2 x 0.20) and the minimum difference between first and second class probabilities is 0.2 (1 x 0.20). In this way more samples will be \textit{NotAssigned} and the call rate will be reduced. However, the certainty of the assignments will be higher:
+<<>>=
+queryResult_AssignLess <- queryGeNetClassifier(leukemiasClassifier, 
+leukemiasEset[,testSamples], minProbAssignCoeff=1.5, minDiffAssignCoeff=1)
+queryResult_AssignLess$class
+@
+To ask which samples are left as \textit{NotAssigned} and which are their probabilities:
+<<>>=
+t(queryResult_AssignLess$probabilities[,
+queryResult_AssignLess$class=="NotAssigned", drop=FALSE])
+@
+
+We can calculate the \textit{confusion matrix} for these samples, as well as the corresponding \textit{sensitivity}, \textit{specificity}, \textit{MCC}, \textit{call rate} for each class and the global \textit{accuracy} and global \textit{call rate} to compare it to the previous examples:
+<<>>=
+confusionMatrix2 <- table(leukemiasEset[,testSamples]$LeukemiaType, 
+queryResult_AssignLess$class)
+@
+<<>>=
+externalValidation.stats(confusionMatrix2)
+@
+
+To better help understanding how these thresholds behave for a specific dataset, if \textit{geNetClassifier()} is executed with \textit{estimateGError=TRUE}, a plot presenting the assignment probabilities for each sample will be generated. This plot shows, for each sample, the probability of the most likely class \textit{versus} the probability difference with next likely class. It allows to view the effects of the 2 coefficients (\textit{minProbAssignCoeff} and \textit{minDiffAssignCoeff}) in the assignment. \\
+
+The plot in Figure \ref*{fig:leukemiasClassifierAssingorNotAssing} was obtained through the execution of \textit{geNetClassifier()} with the leukemia's dataset. It shows that there are several samples under the assignment thresholds: these samples are considered \textit{NotAssigned}. Out of these not assigned samples, the highest probability of some of them was to the real class (green).  However, the points in red correspond to the samples for which the classifier would have done an incorrect assignment.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics{Fig6leukemiasClassifierAssingorNotAssing}
+  \caption{ Assignment probabilities plot: It shows for each sample the probability of its most likely class \textit{versus} the difference in probability with the next likely class. \textbf{Green} dots indicate that the probability of the most likely class is the correct class. \textbf{Red} dots indicate that the probability of the most likely class is not the correct class and, if assigned, such sample would have been missclassified. Dotted lines represent the chosen thresholds. The green area between them shows the samples that are actually assigned, those out of the green area are left as \textit{NotAssigned}. 
+  }
+  \label{fig:leukemiasClassifierAssingorNotAssing}
+\end{figure}
+
+\section{Sample classification: query with new samples of unknown class}
+\label{sec:prediction}
+
+Once a classifier is built for a group of diseases or biological states, we can take external samples from new patients or new studies to query the classifier and know their class type.\\ 
+
+Since we had 60 samples in the initial leukemia dataset and only 50 were used in the classifier, the rest (10 not used for training) can be used as new samples to query the classifier and find out their class. In this case we consider that the class of these samples is \textit{a priori} unknown (despite the fact that we know them since this does not affect the way the method is run). 
+<<>>=
+testSamples <- c(1:60)[-trainSamples]
+@
+
+\textit{queryGeNetClassifier()} can then be used to ask the classifier about the class of the new samples.
+<<>>=
+queryResult_AsUnkown <- queryGeNetClassifier(leukemiasClassifier, 
+leukemiasEset[,testSamples])
+@
+
+In the field \textit{\$class} of the return, we can see the class that each sample has been assigned to.
+<<>>=
+names(queryResult_AsUnkown)
+@
+<<>>=
+queryResult_AsUnkown$class
+@
+
+If there were samples that had not been assigned to any class, they would be marked as\textit{NotAssigned}. In the field \textit{\$probabilities}, we could see the probability of each sample to belong to each class. All these steps are very similar to the ones describes in section \ref{sec:assignment}.
+<<>>=
+t(queryResult_AsUnkown$probabilities[ ,
+queryResult$class=="NotAssigned"])
+@
+
+The function \textit{querySummary()} provides summary of the results by counting the number of samples that were assigned to each class and with which probabilities, therefore it is a good way to have an overview of the classification results. In this case, this summary indicates that \textit{All samples have been assigned}, therefore the \textit{call rate} is 100\%:
+<<>>=
+querySummary(queryResult_AsUnkown, numDecimals=3)
+@
+
+
+
+\newpage
+\section{Functions to plot the results}
+\label{sec:plots}
+\subsection{Plot Ranked Significant Genes: \textit{plot(...@genesRaking)}}
+\label{sec:plotSignificantGenes}
+As previously indicated in section \ref{sec:significantGenes}, the package \textit{geNetClassifier} includes a function to plot the gene rank obtained for each class \textit{versus} the posterior probability of the genes.\\  
+
+The default plot of a \textit{genesRanking} can just be obtained through the plot() function:
+<<eval=FALSE>>=
+plot(leukemiasClassifier@genesRanking)
+@
+
+This function has been extended with some further parameters which allow to personalize the plot. Some of these parameters are: \textit{lpThreshold} sets the value of the posterior probability threshold marked as an horizontal line in the plot; \textit{numGenesPlot} determines the maximum number of genes that will be plot.
+
+<<fig=FALSE, eval=FALSE, echo=TRUE, width=5,height=5>>=
+plot(leukemiasClassifier@genesRanking, numGenesPlot=3000, 
+plotTitle="5 classes: ALL, AML, CLL, CML, NoL", lpThreshold=0.80)
+@
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{Fig7significantGenes}
+  \caption{ Plot of the posterior probabilities of the genes of 4 leukemia classes and the non-leukemia controls, ordering the genes according to their rank and setting the \textit{lpThreshold} at 0.80.}
+  \label{fig:plotSignificantGenes}
+\end{figure}
+
+This plot only needs the genes ranking with the corresponding posterior probabilities. Therefore, the ranking and the plot can be obtained for a given dataset without building a classifier. 
+<<eval=FALSE>>=
+ranking <- calculateGenesRanking(leukemiasEset[,trainSamples], 
+"LeukemiaType")
+@
+
+
+\subsection{Plot Gene Expression Profiles: \textit{plotExpressionProfiles()}}
+\label{sec:plotExpressionProfiles}
+The function \textit{plotExpressionProfiles()} generates an overview of the expression profile of each gene along all the samples contained in the studied dataset. The plot will be saved as a PDF if \textit{fileName} is indicated. The parameter \textit{geneLabels} can be used to show a different name to the one included in the expression matrix (i.e. gene symbol instead of ENSEMBL ID or \textit{Affymetrix} ID).\\
+
+To plot the expression of 4 specific genes across the samples included in the leukemia's set:
+<<eval=FALSE>>=
+myGenes <- c("ENSG00000169575", "ENSG00000078399", 
+"ENSG00000176890", "ENSG00000121742")
+plotExpressionProfiles(leukemiasEset, myGenes, sampleLabels="LeukemiaType")
+@
+\begin{figure}[H]
+      \centering
+      \includegraphics[width=0.60\textwidth]{Fig8expressionProfilePlot}
+  \caption{ Plot of the expression profiles across 60 samples of 4 genes chosen.}
+  \label{fig:expressionProfilePlot}
+\end{figure}
+
+To plot the expression of all the genes used for training the classifier use:
+<<eval=FALSE>>=
+plotExpressionProfiles(leukemiasEset[,trainSamples], leukemiasClassifier,
+sampleLabels="LeukemiaType", fileName="leukExprs_trainSamples.pdf")
+@
+
+To plot the expression of all the classification genes of a specific class, for example AML:
+<<eval=FALSE>>=
+classGenes <- getRanking(leukemiasClassifier@classificationGenes, 
+showGeneID=TRUE)$geneID[,"AML"]
+plotExpressionProfiles(leukemiasEset, genes=classGenes, 
+sampleLabels="LeukemiaType", fileName="AML.pdf", geneLabels=geneSymbols)
+@
+%$
+
+\newpage
+\subsection{Plot Genes Discriminant Power: \textit{plotDiscriminantPower()}}
+\label{sec:plotDiscriminantPower}
+The function \textit{geNetClassifier()} computes the \textit{discriminant power} of each gene included in the classifier (i.e.  the genes included in slot \textit{...@classificationGenes}). The \textit{discriminant power} is a parameter derived from the classifier's \textit{support vectors} which resembles the power of each gene to mark the difference between classes.\\
+
+
+The multi-class SVM algorithm (One-versus-One, OvO) produces a set of \textit{support vectors} for each binary comparison between classes. Such \textit{support vectors} include the \textit{Lagrange coefficients} (alpha) for all the genes selected for the classification. Therefore, we can assign to each gene the combination of the \textit{Lagrange coefficients} for all the \textit{support vectors}. The addition of these coefficients in each class are calculated and represented as piled up bars in a plot. The \textit{discriminant power} is then calculated as the difference between the largest value and the closest (the distance marked by two red lines in the plot). In conclusion, the \textit{discriminant power} is a parameter that allows the characterization of the genes based in their capacity to separate different classes (i.e. different diseases or diseases subtypes compared).\\ 
+
+The \textit{plotDiscriminantPower()} function is included in the algorithm to generate a graphic representation of the \textit{discriminant power}. Example plot of the \textit{discriminant power} for one gene:
+<<fig=FALSE, echo=TRUE, height=5>>=
+plotDiscriminantPower(leukemiasClassifier, 
+classificationGenes="ENSG00000169575")
+@ 
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=FALSE, height=5>>=
+plotDiscriminantPower(leukemiasClassifier, 
+classificationGenes="ENSG00000169575")
+@ 
+  \caption{Plot of the discriminant power of gene VPREB1 (ENSG00000169575). The plot shows that this gene identifies class ALL and the closest class is NoL.}
+  \label{fig:discPowerPlot}
+\end{figure}
+
+The next figure uses the same function to plot the top genes of a class, presenting the value of their discriminant power. In order to plot more than 20 genes, or to save the plots as PDF, provide a \textit{fileName}. Other options in this plot are: \textit{geneLabels} to show a gene name different to the one included in the expression matrix (i.e. gene symbol instead of ENSEMBL ID or \textit{Affymetrix} ID); \textit{classNames} to provide a different name for the classes. 
+
+<<eval=FALSE, echo=TRUE>>=
+discPowerTable <- plotDiscriminantPower(leukemiasClassifier, 
+classificationGenes=getRanking(leukemiasClassifier@classificationGenes,
+showGeneID=T)$geneID[1:4,"AML",drop=FALSE], returnTable=TRUE)
+@
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=FALSE>>=
+discPowerTable <- plotDiscriminantPower(leukemiasClassifier, 
+classificationGenes=getRanking(leukemiasClassifier@classificationGenes,
+showGeneID=T)$geneID[1:4,"AML",drop=FALSE], returnTable=TRUE)
+@
+%$
+  \caption{Plot of the discriminant power of the 4 genes that best discriminate AML class from the other classes. The figures indicate that MEIS1 (ENSG00000143995) presents the highest discriminant power. This gene encodes a homeobox protein that has been involved in myeloid leukemia. A high discriminant power can help to identify gene markers.}
+  \label{fig:discPowerPlot2}
+\end{figure}
+
+
+\newpage
+\subsection{Plot Gene Networks: \textit{plotNetwork()}}
+\label{sec:plotNetwork}
+In this final section we present the functions included in the package that allow to select different networks and sub-networks and to plot them.\\ 
+
+\textbf{Step 1}: Select a network or sub-network.\\
+Use \textit{getSubNetwork()} to select the sub-networks containing only the classification genes:
+<<>>=
+clGenesSubNet <- getSubNetwork(leukemiasClassifier@genesNetwork, 
+leukemiasClassifier@classificationGenes)
+@
+
+\textbf{Step 2}: Get the info of the genes to plot.\\
+Use \textit{genesDetails()} to get the available information to plot. 
+The gene name will be the node label. The expression of the gene will be shown with the node color, and the discriminant power will determine its size. In case the network includes both, genes selected for classification and genes which were not selected, the genes selected for classification will be plot as squares and the not selected as circles (only available for networks plot as PDF). For more details see the legend in figure \ref*{fig:plotNtwAML100g}.
+
+<<eval=FALSE>>=
+clGenesInfo <- genesDetails(leukemiasClassifier@classificationGenes)
+@
+
+\textbf{Step 3}: Plot the network.\\
+The network plots can be produced either using R interactive graphs (\textit{igraph} objects) or plotted as saved PDF files. Use \textit{plotType="pdf"} to save the network as a static PDF file. This option is recommended to produce an overview of several networks. To produce interactive networks skip this argument. Once an interactive graph is produced it can be exported as a \textit{postscript} file (.eps).\\ 
+
+Plot the network corresponding to class ALL using the classification genes and only containing the connected nodes:
+<<eval=FALSE>>=
+plotNetwork(genesNetwork=clGenesSubNet$ALL, genesInfo=clGenesInfo, 
+plotAllNodesNetwork=FALSE, plotOnlyConnectedNodesNetwork=TRUE)
+@
+
+Plot of the classification genes network of ALL:
+<<eval=FALSE>>=
+plotNetwork(genesNetwork=clGenesSubNet$ALL, genesInfo=clGenesInfo)
+@
+
+\begin{figure}[H]
+      \centering
+      \includegraphics[width=0.4\textwidth]{Fig11plotNtwALL9g}
+  \caption{ Gene network obtained for class ALL including the 9 classification genes selected for this disease.}
+  \label{fig:plotNtwALL9g}
+\end{figure}
+
+Plot of the AML network selecting the top 30 genes from the ranking and their associations (calculated as co-expression and mutual information):
+<<eval=FALSE>>=
+top30g <- getRanking(leukemiasClassifier@genesRanking, 
+showGeneID=TRUE)$geneID[1:30,]
+top30gSubNet <- getSubNetwork(leukemiasClassifier@genesNetwork, top30g)
+top30gInfo <- lapply(genesDetails(leukemiasClassifier@genesRanking), 
+function(x) x[1:30,])
+plotNetwork(genesNetwork=top30gSubNet$AML, genesInfo=top30gInfo$AML)
+@
+%$
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{Fig12plotNtwAML30g}
+  \caption{ Gene network obtained for class AML including the top 30 genes selected from the gene ranking of this disease.}
+  \label{fig:plotNtwAML30g}
+\end{figure}
+
+Plot the AML network corresponding selecting the top 100 genes from the ranking and their associations. 
+A preview of this network is automatically plotted for every class by \textit{geNetClassifier()} if \textit{plotsName} is provided.
+<<eval=FALSE>>=
+top100gRanking <- getTopRanking(leukemiasClassifier@genesRanking, 
+numGenes=100)
+top100gSubNet <- getSubNetwork(leukemiasClassifier@genesNetwork, 
+getRanking(top100gRanking, showGeneID=TRUE)$geneID)
+plotNetwork(genesNetwork=top100gSubNet, 
+classificationGenes=leukemiasClassifier@classificationGenes, 
+genesRanking=top100gRanking, plotAllNodesNetwork=TRUE, 
+plotOnlyConnectedNodesNetwork=TRUE, labelSize=0.4, 
+returniGraphs=FALSE, plotType="pdf", 
+fileName="leukemiasNetwork")
+@
+%$
+
+\begin{figure}[H]
+  \centering
+      \includegraphics[page=1, width=0.8\textwidth]{Fig13plotNtwAML100g} 
+      \includegraphics[page=2, width=0.7\textwidth]{Fig13plotNtwAML100g}
+  \caption{ Gene network obtained for class AML selecting the 100 top genes from the gene ranking of this disease, but presenting only the connected nodes. The figure also includes the network legend indicating the meaning of the shapes and colors given to the nodes and edges.}
+  \label{fig:plotNtwAML100g}
+\end{figure}
+
+\begin{thebibliography}{8}  % 100 is a random guess of the total number of references
+
+\bibitem{mile} Haferlach T, Kohlmann A, Wieczorek L, Basso G, Kronnie GT, Bene MC, De Vos J, Hernandez JM, Hofmann WK, Mills KI, Gilkes A, Chiaretti S, Shurtleff SA, Kipps TJ, Rassenti LZ, Yeoh AE, Papenhausen PR, Liu WM, Williams PM, Foa R (2010). \emph{Clinical utility of microarray-based gene expression profiling in the diagnosis and subclassification of leukemia: report from the International Microarray Innovations in Leukemia Study Group}. J Clin Oncol. 28: 2529-2537.
+
+\bibitem{barrier} Barrier A, Lemoine A, Boelle PY, Tse C, Brault D, Chiappini F, Breittschneider J, Lacaine F, Houry S, Huguier M, Van der Laan MJ, Speed T, Debuire B, Flahault A, Dudoit S (2005) \emph{Colon cancer prognosis prediction by gene expression profiling}. Oncogene. 24: 6155-6164.
+
+\bibitem{meyer} Meyer D, Leischa F, Hornik K (2005). \emph{The supportvector machine under test}. Neurocomputing. 55: 169-186
+
+\bibitem{minet} Meyer PE, Lafitte F, Bontempi G (2008). \emph{minet: A R/Bioconductor package for inferring large transcriptional networks using mutual information}. BMC Bioinformatics. 9: 461.
+
+\bibitem{gatexplorer} Risueno A, Fontanillo C, Dinger ME, De Las Rivas J (2010). \emph{GATExplorer: genomic and transcriptomic explorer; mapping expression probes to gene loci, transcripts, exons and ncRNAs}. BMC Bioinformatics. 11: 221.
+
+\bibitem{morris} Morris C (1983). \emph{Parametric empirical Bayes inference: theory and applications}. JASA. 78: 47-65.
+
+\bibitem{EBarrays} Kendziorski CM, Newton MA, Lan H, Gould MN (2003). \emph{On parametric empirical Bayes methods for comparing multiple groups using replicated gene expression profiles}. Statistics in Medicine 22: 3899-3914.
+
+\bibitem{fdr} Benjamini Y, Hochberg Y (1995). \emph{Controlling the false discovery rate: A practical and powerful approach to multiple testing}. J. Roy. Statist. Soc. Ser. B. 57: 289-300.
+
+\end{thebibliography}
+\end{document}
