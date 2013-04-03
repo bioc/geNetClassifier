@@ -2,7 +2,7 @@ Package: geNetClassifier
 Type: Package
 Title: classify diseases and build associated gene networks using gene
         expression profiles
-Version: 0.99.5
+Version: 0.99.6
 Date: 2013-03-21
 Author: Sara Aibar, Celia Fontanillo and Javier De Las Rivas. Bioinformatics and Functional Genomics Group. Cancer Research Center (CiC-IBMCC, CSIC/USAL). Salamanca. Spain.
 Maintainer: Sara Aibar <saibar@usal.es>
