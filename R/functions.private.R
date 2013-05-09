@@ -792,13 +792,15 @@ SV.dif <- function(classifier, gene, originalGeneNames=NULL, correctedAlpha=FALS
 #
 extractGeneLabels <- function(genesAnnotation, geneList=NULL)
 {
-	if(is.null(genesAnnotation)) 
+	if((is.null(genesAnnotation)) || (length(genesAnnotation)==0))
 	{
-		ret <- NULL
+		if(is.null(genesAnnotation)) 			ret <- NULL
+		if(length(genesAnnotation)==0) 	ret <- genesAnnotation
 	}else
 	{
 		if (is.matrix(genesAnnotation) || is.data.frame(genesAnnotation))
 		{
+			if(all(dim(genesAnnotation)>1)) stop("geneSymbols is not valid. Please provide only ONE value per gene. ")
 			if(dim(genesAnnotation)[1]<dim(genesAnnotation)[2]) genesAnnotation <- t(genesAnnotation)  # Ordered as column
 			if(dim(genesAnnotation)[2]>1)
 			{
@@ -817,13 +819,16 @@ extractGeneLabels <- function(genesAnnotation, geneList=NULL)
 			}else stop("The genesAnnotation should be either a matrix, a dataframe or a vector.")
 		}
 		
-
 		if(!is.null(geneList))
 		{
-			if(any(!geneList %in% rownames(genesAnnotation)))
+			missingGenes <- !geneList %in% rownames(genesAnnotation)
+			if(all(missingGenes))
 			{
-				#warning("Some of the given gene IDs are not available in the genes Annotation. Their alias will not be shown.", immediate.=TRUE)
-				# return(c("a")[0])
+				stop("The given gene IDs are not available in the genes Annotation.")
+			}
+			if(any(missingGenes))
+			{
+				warning("Some of the given gene IDs are not available in the genes Annotation. Their alias will not be shown.", immediate.=TRUE)
 			}
 		}else { geneList <- rownames(genesAnnotation) }
 			

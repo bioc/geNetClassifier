@@ -1,9 +1,8 @@
 Package: geNetClassifier
 Type: Package
-Title: classify diseases and build associated gene networks using gene
-        expression profiles
+Title: classify diseases and build associated gene networks using gene expression profiles
 Version: 1.1.0
-Date: 2013-03-21
+Date: 2013-05-09
 Author: Sara Aibar, Celia Fontanillo and Javier De Las Rivas. Bioinformatics and Functional Genomics Group. Cancer Research Center (CiC-IBMCC, CSIC/USAL). Salamanca. Spain.
 Maintainer: Sara Aibar <saibar@usal.es>
 Depends: R (>= 2.10.1), Biobase (>= 2.5.5), EBarrays, minet, methods
@@ -15,8 +14,5 @@ License: GPL (>= 2)
 ZipData: no
 URL: http://bioinfow.dep.usal.es/
 LazyLoad: yes
-biocViews: Bioinformatics, Classification, Microarray, GeneExpression,
-        Leukemia, Cancer
-Collate: class.GenesRanking.R class.GenesNetwork.R
-        class.GeneralizationError.R class.GeNetClassifierReturn.R
-        functions.private.R functions.public.R function.main.R
+biocViews: Bioinformatics, Classification, Microarray, GeneExpression, Leukemia, Cancer
+Collate: class.GenesRanking.R class.GenesNetwork.R class.GeneralizationError.R class.GeNetClassifierReturn.R functions.private.R functions.public.R function.main.R
