@@ -606,29 +606,37 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
 			}
 
 			colnames(allGenesClass)<- c("gen","rank")	
-			classTable <- table(allGenesClass[,1, drop=F],dnn="timesChosen")
+			classTable <- table(allGenesClass[,1, drop=F], dnn="timesChosen")
 			# Substract from those with NA
 			if(any(is.na(allGenesClass[,2]))) 
 			{
 				naGenes <- allGenesClass[which(is.na(allGenesClass[,2])),1]
 				classTable[names(classTable)%in% naGenes] <- classTable[names(classTable)%in% naGenes, drop=FALSE]-1
 			}
-		
-			classTable <- cbind(timesChosen=classTable, chosenRankMean=rep(NA, times=dim(classTable)[1]), chosenRankSD=rep(NA, times=dim(classTable)[1]), gERankMean=rep(NA, times=dim(classTable)[1]), gERankSD=rep(NA, times=dim(classTable)[1]))
+			
+			if(!is.null(geneLabels)) 
+			{
+				classTable <- cbind(geneSymbols=extractGeneLabels(geneLabels, rownames(classTable)), timesChosen=classTable)
+			}else
+			{
+				classTable <- cbind(timesChosen=classTable, chosenRankMean=rep(NA, times=dim(classTable)[1]), chosenRankSD=rep(NA, times=dim(classTable)[1]), gERankMean=rep(NA, times=dim(classTable)[1]), gERankSD=rep(NA, times=dim(classTable)[1]))
+			}
 			for(gene in unique(allGenesClass[,1]))  
-			{		#TODO:
-										# OLD
-										geneRank <- as.integer(allGenesClass[which(allGenesClass[,1]==gene),2])
-										classTable[gene,"chosenRankMean"] <- round(mean(geneRank),2)
-										if (classTable[gene,"timesChosen"]>1) classTable[gene,"chosenRankSD"] <- round(sd(geneRank),2)
-										else classTable[gene,"chosenRankSD"] <- 0
-										# NEW
-										geneRanks <- sapply(allGenesDetails[1:numCV.extern], function(x) x[[cl]][gene,"ranking"])
-										classTable[gene,"gERankMean"] <- round(mean(geneRanks, na.rm=T),2)
-										classTable[gene,"gERankSD"] <- round(sd(geneRanks, na.rm=T),2)
-									
+			{								
+				geneRank <- as.integer(allGenesClass[which(allGenesClass[,1]==gene),2])
+				classTable[gene,"chosenRankMean"] <- round(mean(geneRank),2)
+				if (classTable[gene,"timesChosen"]>1) classTable[gene,"chosenRankSD"] <- round(sd(geneRank),2)
+				else classTable[gene,"chosenRankSD"] <- 0
+				
+				geneRanks <- sapply(allGenesDetails[1:numCV.extern], function(x) x[[cl]][gene,"ranking"])
+				classTable[gene,"gERankMean"] <- round(mean(geneRanks, na.rm=T),2)
+				classTable[gene,"gERankSD"] <- round(sd(geneRanks, na.rm=T),2)
 			}
 			classTable <- classTable[order(-classTable[,"timesChosen"], classTable[,"gERankMean"]),, drop=F]
+			
+			classTable <- data.frame(classTable)
+			if(!is.null(geneLabels)) 	classTable <- cbind(geneSymbol=extractGeneLabels(geneLabels, rownames(classTable)), classTable)
+			
 			genesStats<- c(genesStats, list(classTable))
 		}
 

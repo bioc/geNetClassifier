@@ -798,13 +798,21 @@ plotDiscriminantPower <- function(classifier, classificationGenes=NULL , geneLab
 	}
 	
 	# If classificationGenes is not provided/valid, use the classifier's SV
-	if(any(!as.vector(classificationGenes[!is.na(classificationGenes)]) %in% colnames(classifier$SV))) 
+	missingGenes <- !as.vector(classificationGenes[!is.na(classificationGenes)]) %in% colnames(classifier$SV)
+	if(any(missingGenes)) 
 	{
-		missingGenes <- as.vector(classificationGenes[!is.na(classificationGenes)])[which(!as.vector(classificationGenes[!is.na(classificationGenes)]) %in% colnames(classifier$SV))]
+		missingGenes <- as.vector(classificationGenes[!is.na(classificationGenes)])[which(missingGenes)]
+		# Transformed into dataframe colnames to make sure they match the $SV
+			m <- matrix(ncol=length(missingGenes))	
+			colnames(m) <- missingGenes
+			m <- data.frame(m)
+			missingGenes <- colnames(m)
+		missingGenes <- missingGenes[which(!missingGenes %in% colnames(classifier$SV))]
+		
 		classificationGenes[which(classificationGenes %in% missingGenes)] <- NA
 		
-		 if(length(classificationGenes[!is.na(classificationGenes)]) == 0) stop("The given 'classificationGenes' are not used by the classifier. Their Discriminant Power cannot be calculated.")
-		warning(paste("The following classificationGenes are not used by the classifier. Their Discriminant Power cannot be calculated: ", missingGenes, sep=""))
+		 if(all(is.na(classificationGenes))) stop("The given 'classificationGenes' are not used by the classifier. Their Discriminant Power cannot be calculated.")
+		if(length(missingGenes)>0) warning(paste("The following classificationGenes are not used by the classifier. Their Discriminant Power cannot be calculated: ", missingGenes, sep=""))
 	}
 	if(is.null(classificationGenes)) classificationGenes <- colnames(classifier$SV)
 
@@ -1043,6 +1051,7 @@ plotDiscriminantPower <- function(classifier, classificationGenes=NULL , geneLab
 
 plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NULL, genesInfo=NULL,geneLabels=NULL, returniGraphs=FALSE, plotType="dynamic", fileName=NULL, plotAllNodesNetwork=TRUE, plotOnlyConnectedNodesNetwork=FALSE,  plotClassifcationGenesNetwork=FALSE, labelSize=0.5, vertexSize=NULL, width=NULL, height=NULL, verbose=TRUE)
 {
+	layoutList <- NULL
 	if(!library(igraph, logical.return=TRUE)) 
 	{	
 		warning("The function plotNetwork()  requires the packge igraph but it could not be loaded.")
@@ -1346,7 +1355,14 @@ plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NU
 			{
 				#### Set graph parameters #####
 				# Layout
-				graphLayout = layout.fruchterman.reingold(classGraph, niterNumeric=500) # .grid is faster, but the result looks far worse.
+				if(is.null(layoutList)) 
+				{
+					graphLayout <- layout.fruchterman.reingold(classGraph, niterNumeric=500) # .grid is faster, but the result looks far worse.
+				}else
+				{
+					graphLayout <- layoutList[[nw]]
+				}
+				
 
 				# Vertex labels
 				vertexLabels <- get.vertex.attribute(classGraph,"name")
