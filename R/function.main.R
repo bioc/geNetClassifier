@@ -175,7 +175,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
 	
 	
 	# Check whether the genesRanking provided matches the filtered eset
-	if(!is.null(genesRankingGlobal) && (sum(!rownames(genesRankingGlobal@postProb) %in% rownames(eset)) > 0)) 	# There are genes in the genesRanking which arent in the eset -> Recalculate
+	if(!is.null(genesRankingGlobal) && (sum(!rownames(genesRankingGlobal@postProb) %in% rownames(esetFiltered)) > 0)) 	# There are genes in the genesRanking which arent in the eset -> Recalculate
 	{
 		genesRankingGlobal <- NULL
 		warning("The genesRanking given as argument doesn't match the dataset. Recaculculating the genesRanking...", immediate. = TRUE)
@@ -839,7 +839,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
 	if(!is.null(plotsName))
 	{		
 		plotGeNetClassifierReturn(geNetClassifierReturn, fileName=plotsName, lpThreshold=lpThreshold, numGenesLpPlot=numBestGenes, numGenesNetworkPlot=numGenesNetworkPlot, geneLabels=geneLabels, verbose=FALSE)
-		if(!is.null(classificationGenesRanking)) plotExpressionProfiles(eset, classificationGenesRanking, fileName=paste(plotsName,"_expressionProfiles.pdf",sep=""), sampleLabels=sampleLabels, labelsOrder=labelsOrder,verbose=FALSE)
+		if(!is.null(classificationGenesRanking)) plotExpressionProfiles(esetFiltered, classificationGenesRanking, fileName=paste(plotsName,"_expressionProfiles.pdf",sep=""), sampleLabels=sampleLabels, labelsOrder=labelsOrder,verbose=FALSE)
 		plotCVgE <- FALSE
 		if(buildClassifier || (estimateGError && plotCVgE)) plotErrorNumGenes(numGenesTPglobal, numGenesClass, numTrainGenes, numGenesClassGE, paste(plotsName,"_errorNumGenes.pdf",sep=""), plotCVgE=plotCVgE) 
 		if(estimateGError)
