@@ -1,18 +1,26 @@
 Package: geNetClassifier
 Type: Package
-Title: classify diseases and build associated gene networks using gene expression profiles
-Version: 1.3.0
+Title: classify diseases and build associated gene networks using gene
+        expression profiles
+Version: 1.3.1
 Date: 2013-05-09
-Author: Sara Aibar, Celia Fontanillo and Javier De Las Rivas. Bioinformatics and Functional Genomics Group. Cancer Research Center (CiC-IBMCC, CSIC/USAL). Salamanca. Spain.
+Author: Sara Aibar, Celia Fontanillo and Javier De Las Rivas.
+        Bioinformatics and Functional Genomics Group. Cancer Research
+        Center (CiC-IBMCC, CSIC/USAL). Salamanca. Spain.
 Maintainer: Sara Aibar <saibar@usal.es>
 Depends: R (>= 2.10.1), Biobase (>= 2.5.5), EBarrays, minet, methods
 Imports: e1071, ipred, graphics, BiocGenerics
 Suggests: leukemiasEset
 Enhances: RColorBrewer, igraph
-Description: Comprehensive package to automatically train a multi-class SVM classifier based on gene expression data. Provides transparent selection of gene markers, their coexpression networks, and an interface to query the classifier.
+Description: Comprehensive package to automatically train a multi-class
+        SVM classifier based on gene expression data. Provides
+        transparent selection of gene markers, their coexpression
+        networks, and an interface to query the classifier.
 License: GPL (>= 2)
 ZipData: no
 URL: http://bioinfow.dep.usal.es/
 LazyLoad: yes
-biocViews: Bioinformatics, Classification, Microarray, GeneExpression, Leukemia, Cancer
-Collate: class.GenesRanking.R class.GenesNetwork.R class.GeneralizationError.R class.GeNetClassifierReturn.R functions.private.R functions.public.R function.main.R
+Collate: class.GenesRanking.R class.GenesNetwork.R
+        class.GeneralizationError.R class.GeNetClassifierReturn.R
+        functions.private.R functions.public.R function.main.R
+biocViews: Classification, Microarray, GeneExpression, Leukemia, Cancer
