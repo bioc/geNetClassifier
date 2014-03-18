@@ -312,11 +312,16 @@ querySummary <- function(queryResult, showNotAssignedSamples=TRUE, numDecimals=2
 ############################
 #  Plots the assignment probabilities
 ############################
-plotAssignments <- function(queryResult, realLabels, minProbAssignCoeff=1, minDiffAssignCoeff=0.8, totalNumberOfClasses=NULL)
+# Changes in version 1.2:
+# function plotPoints no longer required. Optimized speed.
+# New argument: pointSize 
+# Background color: Blue
+# Cairo
+plotAssignments <- function(queryResult, realLabels, minProbAssignCoeff=1, minDiffAssignCoeff=0.8, totalNumberOfClasses=NULL, pointSize=0.8)							
 {
 	# Comprobar y concatenar si hay varias queries
-	 queryResult <- queryResultCheck(queryResult)
-	 
+	queryResult <- queryResultCheck(queryResult)
+	
 	# Comprobar  los argumentos
 	if(!is.factor(realLabels)) { warning("The second argument (real labels) had to be converted into a factor.", immediate. = TRUE)}	
 	realLabels <- factor (realLabels)
@@ -334,12 +339,13 @@ plotAssignments <- function(queryResult, realLabels, minProbAssignCoeff=1, minDi
 		numClasses <- totalNumberOfClasses
 	}
 	if(!is.numeric(minDiffAssignCoeff)) stop("'minDiffAssignCoeff' should be a coefficient to modify the required difference between probabilites to assign the sample to a class.")
-		if(minProbAssignCoeff<0 || ((numClasses != 2) &&(minProbAssignCoeff>(numClasses/2)))) stop("'minProbAssignCoeff' should be between 0 and half of the number of classes.")
-		if(minDiffAssignCoeff<0 || minDiffAssignCoeff>numClasses) stop("'minDiffAssignCoeff' should be between 0 and the number of classes.")
-
+	if(minProbAssignCoeff<0 || ((numClasses != 2) &&(minProbAssignCoeff>(numClasses/2)))) stop("'minProbAssignCoeff' should be between 0 and half of the number of classes.")
+	if(minDiffAssignCoeff<0 || minDiffAssignCoeff>numClasses) stop("'minDiffAssignCoeff' should be between 0 and the number of classes.")
+	if(!is.numeric(pointSize)) stop("'pointSize' should be numeric.")
+	
 	# Settings:
-	abLineColor <- "#A1E66C"
-	bgColor <- "#DFFFCC"
+	abLineColor <- "midnightblue"
+	bgColor <- "aliceblue"
 	correctColor <- "#3F9728"
 	incorrectColor <- "red"
 	minX <- 0.2
@@ -363,18 +369,41 @@ plotAssignments <- function(queryResult, realLabels, minProbAssignCoeff=1, minDi
 		axis(2)
 	}
 	
-	text(0.7, 0.95, labels="Assigned", col="#2F872C", cex=0.8)
+	text(0.7, 0.95, labels="Assigned", col=abLineColor, cex=0.8)
 	if(numClasses>2)  text(0.3, 0.95, labels="Not Assigned", col="#606362", cex=0.8)
 	text(minProb-0.03, minDiff + 0.01, labels="minProb", col=abLineColor, srt = 90, pos=4, cex=0.8)
 	text(minX+0.09, minDiff+0.01, labels="minDiff", col=abLineColor, pos=1, cex=0.8)
 	legend("bottomright", "(x,y)", legend=c("Correct", "Incorrect"), title = "Most likely class", text.width = strwidth("1,000,000"),  xjust = 1, yjust = 1, lty = 0, pch=16, col=c(correctColor, incorrectColor), cex=0.8)
 	
 	# Plot probabilities
-	prob<- rbind(queryResult$probabilities, realLabels=as.character(realLabels[colnames(queryResult$probabilities)]))
-	coordinates <- t(apply(prob, 2, function(x) {plotAssignmentPoint(x, correctColor, incorrectColor)}))
-	if(names(dev.cur())!="pdf") print("To identify a sample on the plot click on it. Press ESC or  right-click on the plot screen to finish.")
-	id <- identify(coordinates, labels=paste(rownames(coordinates)," (",prob["realLabels", rownames(coordinates)], ")", sep=""))
+	realLabels <- as.character(realLabels[colnames(queryResult$probabilities)])	
+	prob <- apply(queryResult$probabilities, 2, function(x)
+					{														
+						largest <- which(x == max(x))
+						nextProb <- max(x[-largest])
+						class <- names(x)[largest]
+				
+				
+						return(c(biggestProb=x[largest], nextProb=nextProb, assignedClass=class))
+					})
+	rownames(prob) <- c("biggestProb", "nextProb", "assignedClass")
+	prob <- rbind(prob, realLabels=realLabels)	
+				
+	correct <- which(prob["assignedClass",] == prob["realLabels",])
+	incorrect <- which(prob["assignedClass",] != prob["realLabels",])
+	
+	biggestProb <- as.numeric(prob["biggestProb",])
+	nextProb <- biggestProb - as.numeric(prob["nextProb",])
+	points(biggestProb[correct], nextProb[correct], col=correctColor, pch=16, cex=pointSize)
+	points(biggestProb[incorrect], nextProb[incorrect], col=incorrectColor, pch=16, cex=pointSize)								
+
+	if(!names(dev.cur()) %in% c("pdf", "Cairo")) 
+	{
+		print("To identify a sample on the plot click on it. Press ESC or  right-click on the plot screen to finish.")
+		id <- identify(coordinates, labels=paste(rownames(coordinates)," (",prob["realLabels", rownames(coordinates)], ")", sep=""))
+	}
 }
+
 
 ## Calculates the genes ranking and plots the significant genes  
 #####
@@ -527,7 +556,7 @@ calculateGenesRanking <- function(eset=NULL, sampleLabels=NULL, numGenesPlot=100
 ## Perfiles de expresion de los genes del clasificador en todas las muestras
 # Saves the plots in a PDF file of name fileName
 # Example: plotExpressionProfiles (basicLeukemias[,trainSamples], getRanking(getTopRanking(genesRankingGlobal, 5))$geneID, fileName="expresion.pdf", sampleLabels=basicLeukemias$LeukemiaType[trainSamples])
-plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=NULL, sampleLabels=NULL, labelsOrder=NULL, showSampleNames=FALSE, showMean= FALSE, sameScale=TRUE, verbose=TRUE)
+plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=NULL, sampleLabels=NULL, sampleColors=NULL, labelsOrder=NULL, showSampleNames=FALSE, showMean= FALSE, sameScale=TRUE, verbose=TRUE)
 {
 	printText<-""
 	
@@ -585,11 +614,11 @@ plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=N
 	if(!is.null(geneLabels)) geneLabels<-extractGeneLabels(geneLabels, rownames(exprMatrix[genesVector,]))
     if(!is.null(fileName) && !is.character(fileName)) stop("The file name is not valid.")
 	if(!is.null(fileName) && regexpr(".pdf", fileName) == -1) fileName <- paste(fileName, ".pdf", sep="") 
+	numSamples <- dim(exprMatrix)[2] 
 	if(!is.null(sampleLabels))
 	{
 		if(class(sampleLabels) != "factor") { warning("The argument 'sampleLabels' had to be converted into a factor.")}
 		sampleLabels <- factor (sampleLabels) #Just in case there aren't samples of all the original labels	
-		numSamples <- dim(exprMatrix)[2] 
 		if(numSamples != length(sampleLabels)) stop("The number of labels doesn't match the number of samples.")  
 		if(!is.null(names(sampleLabels)))
 		{
@@ -609,6 +638,9 @@ plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=N
 			labelsOrder <- NULL
 		}
 	}
+	if(is.null(sampleColors)) sampleColors <- "red"
+	if((length(sampleColors) > 1) && (numSamples != length(sampleColors))) warning("The number of sampleColors doesn't match the number of samples.")  
+	
 
 	if(!is.logical(showMean)) showMean <- TRUE
 	if(!is.logical(sameScale)) showMean <- TRUE
@@ -627,6 +659,7 @@ plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=N
 		}
 		matriz <- exprMatrix[genesVector, indexes, drop=F]
 		sampleLabels <- sampleLabels[indexes]
+		if(length(sampleColors) > 1) sampleColors <- sampleColors[indexes]
 	}else
 	{
 		classes <- colnames(genes)			
@@ -677,8 +710,7 @@ plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=N
 				maxEset <- max(0, matriz[genesVector[i],])
 				ylim <- c(minEset - (minEset*0.05), maxEset +(maxEset*0.05))
 			}
-			
-			plot(matriz[genesVector[i],], type="h", col="red", lwd=2, ylim=ylim, xlab="Sample index", ylab="Expression values")
+			plot(matriz[genesVector[i],], type="h", col=sampleColors, lwd=2, ylim=ylim, xlab="Sample index", ylab="Expression values")
 			# if(dim(matriz)[2] < 20)
 			# {	
 				# points(matriz[genesVector[i],], type="l", col="grey", lwd=1)

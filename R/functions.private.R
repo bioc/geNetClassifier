@@ -19,7 +19,6 @@
 # assignment.conditions
 # SV.dif
 # extractGeneLabels
-# plotAssignmentPoint
 # plotErrorNumGenes
 
 ############################### PRIVATE FUNCTIONS ##############################
@@ -840,23 +839,6 @@ extractGeneLabels <- function(genesAnnotation, geneList=NULL)
 	}
 	return(ret)
 }
-
-# Aux function for plotAssignments
-plotAssignmentPoint<-function(prob, correctColor, incorrectColor)
-{
-	realLabels <- prob["realLabels"]
-	prob <- prob[-length(prob)]
-	
-	ord <- order(prob,decreasing=TRUE)
-	color <- ifelse(realLabels ==  names(prob)[ord[1]], correctColor, incorrectColor)
-	size <- ifelse(realLabels ==  names(prob)[ord[1]], 0.8, 1.2)
-	
-	prob<-as.numeric(prob)
-	cords <- c(prob[ord[1]], prob[ord[1]]-prob[ord[2]])
-	points(cords[1], cords[2], col=color, pch=16, cex=size)
-	return(cords)
-}
-
 
 	# ARREGLAR O ELIMINAR
 		plotErrorNumGenes <- function(numGenesTPglobal, numGenesClass, numTrainGenes, numGenesClassGE, plotsName, plotCVgE=FALSE)

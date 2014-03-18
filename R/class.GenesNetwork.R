@@ -61,9 +61,15 @@ setClass(Class="GenesNetwork",
 		# plotNetwork (genesNetwork=x)
     # })
 	
-	plot.GenesNetwork <- function (x, y="missing", classificationGenes=NULL, genesRanking=NULL, genesInfo=NULL,geneLabels=NULL, returniGraphs=FALSE, plotType="dynamic", plotAllNodesNetwork=TRUE, plotOnlyConnectedNodesNetwork=FALSE,  plotClassifcationGenesNetwork=FALSE, labelSize=0.5, width=800, height=500, fileName="genesNetwork.pdf", verbose=TRUE,...)
+	# plot.GenesNetwork <- function (x, y="missing", classificationGenes=NULL, genesRanking=NULL, genesInfo=NULL,geneLabels=NULL, returniGraphs=FALSE, plotType="dynamic", plotAllNodesNetwork=TRUE, plotOnlyConnectedNodesNetwork=FALSE,  plotClassifcationGenesNetwork=FALSE, labelSize=0.5, width=800, height=500, fileName="genesNetwork.pdf", verbose=TRUE,...)
+	# { 
+	# 	plotNetwork(genesNetwork=x, classificationGenes=classificationGenes, genesRanking=genesRanking, genesInfo=genesInfo,geneLabels=geneLabels, returniGraphs=returniGraphs, plotType=plotType, plotAllNodesNetwork=plotAllNodesNetwork, plotOnlyConnectedNodesNetwork=plotOnlyConnectedNodesNetwork,  plotClassifcationGenesNetwork=plotClassifcationGenesNetwork, labelSize=labelSize, width=width, height=height, fileName=fileName, verbose=verbose)
+	# }
+
+	# Version 1.2:
+	plot.GenesNetwork <- function (x, y="missing",...)
 	{ 
-		plotNetwork (genesNetwork=x, classificationGenes=classificationGenes, genesRanking=genesRanking, genesInfo=genesInfo,geneLabels=geneLabels, returniGraphs=returniGraphs, plotType=plotType, plotAllNodesNetwork=plotAllNodesNetwork, plotOnlyConnectedNodesNetwork=plotOnlyConnectedNodesNetwork,  plotClassifcationGenesNetwork=plotClassifcationGenesNetwork, labelSize=labelSize, width=width, height=height, fileName=fileName, verbose=verbose)
+		plotNetwork(genesNetwork=x,...)
 	}
 	
 	if(!exists("overview")) setGeneric(name="overview", def=function(object) standardGeneric("overview"))

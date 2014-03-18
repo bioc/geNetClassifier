@@ -9,8 +9,10 @@ Plots the expression profiles of the given genes.
 }
 \usage{
 plotExpressionProfiles(eset, genes=NULL, fileName=NULL, geneLabels = NULL, 
-    sampleLabels = NULL, labelsOrder = NULL, showSampleNames = FALSE, 
-	showMean = FALSE, sameScale = TRUE, verbose = TRUE)
+    sampleLabels = NULL,  sampleColors=NULL, labelsOrder = NULL, 
+    showSampleNames = FALSE, showMean = FALSE, sameScale = TRUE, 
+    verbose = TRUE)
+
 }
 \arguments{
   \item{eset}{
@@ -29,6 +31,9 @@ Vector or Matrix. Gene name, ID or label which should be shown in the returned r
   \item{sampleLabels}{
 Character. PhenoData variable (column name) containing the train samples class labels. \cr
 Matrix or Factor. Class labels of the train samples.
+}
+  \item{sampleColors}{
+Character. Colors for the lines of the samples.
 }
   \item{labelsOrder}{
 Vector or Factor. Order in which the labels should be shown in the returned results and plots.
@@ -75,6 +80,10 @@ plotExpressionProfiles(leukemiasEset)
 myGenes <- c("ENSG00000169575","ENSG00000078399","ENSG00000005381","ENSG00000154511")
 plotExpressionProfiles(leukemiasEset, genes=myGenes, sampleLabels="LeukemiaType")
 
+# Color samples:
+plotExpressionProfiles(leukemiasEset, genes="ENSG00000078399", sampleLabels="LeukemiaType", 
+sampleColors=c("red", "blue")[(leukemiasEset$LeukemiaType =="AML")+1])
+
 ######
 # Expression profiles related to a classifier
 ######
@@ -97,6 +106,7 @@ plotExpressionProfiles(leukemiasEset, genes=classGenes, sampleLabels="LeukemiaTy
 
 # Plot (on screen) the expression of the top ranked genes of each class
 plotExpressionProfiles(leukemiasEset, leukemiasClassifier, sampleLabels="LeukemiaType")
+
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

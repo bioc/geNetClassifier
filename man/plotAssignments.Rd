@@ -9,7 +9,7 @@ Plots the assignment probabilities of a previous query.
 \usage{
 plotAssignments(queryResult, realLabels, 
     minProbAssignCoeff = 1, minDiffAssignCoeff = 0.8, 
-	totalNumberOfClasses = NULL)
+	totalNumberOfClasses = NULL, pointSize=0.8)
 }
 \arguments{
   \item{queryResult}{
@@ -26,6 +26,9 @@ Numeric. See \code{\link[geNetClassifier:queryGeNetClassifier]{queryGeNetClassif
 }
   \item{totalNumberOfClasses}{
 Numeric. Total number of classes the classifier was trained with. The assignment probability is determined bassed on it. It is not needed if there are samples of all the training classes.
+}
+\item{pointSize}{
+Numeric. Point size modifier.
 }
 }
 

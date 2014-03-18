@@ -28,7 +28,12 @@ exportClasses(GeNetClassifierReturn)
 exportMethods(initialize, show, overview, names)
 
 import(Biobase)
+import(methods)
 importFrom(e1071, svm)
 importFrom(ipred, kfoldcv)
 importFrom(graphics, plot)
-importFrom(minet, minet)
+importFrom(EBarrays,ebPatterns)
+importFrom(EBarrays,emfit)
+
+
+

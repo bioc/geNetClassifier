@@ -32,7 +32,7 @@
 \SweaveOpts{concordance=TRUE}
 \maketitle 
 \begin{center}
-Version: 1.0
+Version: 1.2
 \end{center}
 \tableofcontents
 
@@ -43,11 +43,9 @@ Version: 1.0
 \label{sec:intro}
 \textit{geNetClassifier} is an algorithm designed to build transparent classifiers and the associated gene networks based on genome-wide expression data. \\
 
-%Its main function is also named \textit{geNetClassifier}. 
 \textit{geNetClassifier()} is also the name of the main function in the package. This function takes as input the \textit{expressionSet} or expression matrix of the studied samples and the classes the samples belong to (i.e. the diseases or disease subtypes). Once the data are analyzed, geNetClassifier() provides: \textbf{(i)} ranked gene sets (or gene signatures) that identify each class; \textbf{(ii)} a multiple-class classifier; and \textbf{(iii)} gene networks associated to each class.
 \begin{itemize}
 \item Gene ranking:  The genes, probesets, or any other variables that are input in the \textit{expressionSet} are considered \textit{features} for the classification. These features are analyzed by \textit{geNetClassifier}, and ranked according to the class they best identify, in order to select the optimum set for training the classifier. This ranking is returned by \textit{geNetClassifier()} as well as the parameters calculated for gene selection. 
-% features = genes from now on.
 
 \item Classifier: \textit{geNetClassifier()} also returns a multi-class SVM-based classifier, which can be queried later on; the genes (features) chosen for classification; their discriminant power (a parameter that measures the importance that the classifier internally gives to each gene); and, optionally, the classifier's generalization error and statistics about the selected genes.
 
