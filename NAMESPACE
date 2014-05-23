@@ -29,11 +29,13 @@ exportMethods(initialize, show, overview, names)
 
 import(Biobase)
 import(methods)
+import(minet)
 importFrom(e1071, svm)
-importFrom(ipred, kfoldcv)
 importFrom(graphics, plot)
 importFrom(EBarrays,ebPatterns)
 importFrom(EBarrays,emfit)
+importFrom(EBarrays,postprob)
+
 
 
 

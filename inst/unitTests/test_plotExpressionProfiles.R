@@ -8,9 +8,9 @@
 
 test_plotExpressionProfiles <- function()
 {
-	myEset <- rbind(1:4, c(rep(1,2), rep(2,2)))
-	rownames(myEset) <- c("gene1","gene2")
+    myEset <- rbind(1:4, c(rep(1,2), rep(2,2)))
+    rownames(myEset) <- c("gene1","gene2")
 
-	# Nothing should be returned (NULL)
-	checkEquals(plotExpressionProfiles(eset=myEset, genes=rownames(myEset), sampleLabels=c(rep("one", 2), rep("two", 2))), NULL)
+    # Nothing should be returned (NULL)
+    checkEquals(plotExpressionProfiles(eset=myEset, genes=rownames(myEset), sampleLabels=c(rep("one", 2), rep("two", 2))), NULL)
 }

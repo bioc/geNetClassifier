@@ -33,35 +33,35 @@ Maintainer: Sara Aibar <saibar@usal.es>
 % TO DO: % The detailed user guide: \code{vignette("geNetClassifier-Vignette")} \cr 
 % A comprehensive usage sample: \code{vignette("geNetClassifier-UsageSample")} \cr
 Main functions included in this package:
-	\itemize{
-	\item{\code{\link[geNetClassifier:geNetClassifier]{geNetClassifier}} }
-	\item{\code{\link[geNetClassifier:queryGeNetClassifier]{queryGeNetClassifier}} }
-	}
+\itemize{
+\item{\code{\link[geNetClassifier:geNetClassifier]{geNetClassifier}} }
+\item{\code{\link[geNetClassifier:queryGeNetClassifier]{queryGeNetClassifier}} }
+}
 Query stats funtions:
-	\itemize{
-	\item{\code{\link[geNetClassifier:querySummary]{querySummary}} }
-	\item{\code{\link[geNetClassifier:externalValidation.probMatrix]{externalValidation.probMatrix}} }
-	\item{\code{\link[geNetClassifier:externalValidation.stats]{externalValidation.stats}} }
-	\item{\code{\link[geNetClassifier:plotAssignments]{plotAssignments}} }
-	}
+\itemize{
+\item{\code{\link[geNetClassifier:querySummary]{querySummary}} }
+\item{\code{\link[geNetClassifier:externalValidation.probMatrix]{externalValidation.probMatrix}} }
+\item{\code{\link[geNetClassifier:externalValidation.stats]{externalValidation.stats}} }
+\item{\code{\link[geNetClassifier:plotAssignments]{plotAssignments}} }
+}
 Plots and genes info:
-	\itemize{
-	\item{\code{\link[geNetClassifier:calculateGenesRanking]{calculateGenesRanking}} }
-	\item{\code{\link[geNetClassifier:plotNetwork]{plotNetwork}} }
-	\item{\code{\link[geNetClassifier:plotDiscriminantPower]{plotDiscriminantPower}} }
-	\item{\code{\link[geNetClassifier:plotExpressionProfiles]{plotExpressionProfiles}} }
-	}
+\itemize{
+\item{\code{\link[geNetClassifier:calculateGenesRanking]{calculateGenesRanking}} }
+\item{\code{\link[geNetClassifier:plotNetwork]{plotNetwork}} }
+\item{\code{\link[geNetClassifier:plotDiscriminantPower]{plotDiscriminantPower}} }
+\item{\code{\link[geNetClassifier:plotExpressionProfiles]{plotExpressionProfiles}} }
+}
 Classes:
-	\itemize{
-	\item{\code{\link[geNetClassifier:GenesRanking-class]{GenesRanking}} }
-	\item{\code{\link[geNetClassifier:GenesNetwork-class]{GenesNetwork}} }
-	\item{\code{\link[geNetClassifier:GeNetClassifierReturn-class]{GeNetClassifierReturn}} }
-	\item{\code{\link[geNetClassifier:GeneralizationError-class]{GeneralizationError}} }
-	}
+\itemize{
+\item{\code{\link[geNetClassifier:GenesRanking-class]{GenesRanking}} }
+\item{\code{\link[geNetClassifier:GenesNetwork-class]{GenesNetwork}} }
+\item{\code{\link[geNetClassifier:GeNetClassifierReturn-class]{GeNetClassifierReturn}} }
+\item{\code{\link[geNetClassifier:GeneralizationError-class]{GeneralizationError}} }
+}
 Related data sets:
-	\itemize{
-	\item{\code{\link[leukemiasEset:leukemiasEset]{leukemiasEset}} }
-	}
+\itemize{
+\item{\code{\link[leukemiasEset:leukemiasEset]{leukemiasEset}} }
+}
 }
 %\examples{
 %#TO DO.-

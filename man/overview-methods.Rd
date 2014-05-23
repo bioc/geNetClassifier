@@ -27,7 +27,7 @@ This method's classes help pages:\cr
 \code{\link[geNetClassifier:GeneralizationError-class]{GeneralizationError}} \cr
 }
 \examples{
-library(geNetClassifier)
+
 data(leukemiasClassifier)
 # geNetClassifier return:
 overview(leukemiasClassifier)

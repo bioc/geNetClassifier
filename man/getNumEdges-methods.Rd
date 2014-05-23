@@ -12,7 +12,6 @@ Returns the number of edges (relationships) in the network.
 \describe{
 
 \item{\code{signature(object = "GenesNetwork")}}{
-%%  ~~describe this method here~~
 }
 }}
 \seealso{

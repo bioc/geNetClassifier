@@ -14,10 +14,10 @@
 Object wich wraps all the items returned by \code{\link[geNetClassifier:geNetClassifier]{geNetClassifier}}. It usually contains the classifier, the genes ranking and information, the network and any other requested statistics.
 }
 \section{Methods}{
-  \describe{
-    \item{names}{\code{signature(x = "GeNetClassifierReturn")}: Shows the available slots in the object.  }
-    \item{overview}{\code{signature(object = "GeNetClassifierReturn")}: Shows an overview of all the slots in the object.  }
-	 }
+\describe{
+\item{names}{\code{signature(x = "GeNetClassifierReturn")}: Shows the available slots in the object.  }
+\item{overview}{\code{signature(object = "GeNetClassifierReturn")}: Shows an overview of all the slots in the object.  }
+}
 }
 
 \section{Slots}{
@@ -65,7 +65,7 @@ Main package function and classifier training: \code{\link[geNetClassifier:geNet
 ######
 # Load data and train a classifier
 ######
-library(geNetClassifier)
+
 # Load an expressionSet:
 library(leukemiasEset)
 data(leukemiasEset)
@@ -102,10 +102,10 @@ genesDetails(leukemiasClassifier@classificationGenes)$AML
 # Generalization Error estimated by cross-validation:
 leukemiasClassifier@generalizationError
 overview(leukemiasClassifier@generalizationError)
-	# i.e. probabilityMatrix:
-	leukemiasClassifier@generalizationError@probMatrix
-	# i.e. statistics of the genes chosen in any of the CV loops for for AML:
-	leukemiasClassifier@generalizationError@classificationGenes.stats$AML
+# i.e. probabilityMatrix:
+leukemiasClassifier@generalizationError@probMatrix
+# i.e. statistics of the genes chosen in any of the CV loops for for AML:
+leukemiasClassifier@generalizationError@classificationGenes.stats$AML
 	
 # List of Networks by classes:
 leukemiasClassifier@genesNetwork

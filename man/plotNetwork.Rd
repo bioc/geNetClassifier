@@ -13,14 +13,14 @@ Plots the coexpression and/or mutual information network for the given genes.
 }
 \usage{
 plotNetwork(genesNetwork, classificationGenes=NULL, genesRanking=NULL, 
-	genesInfo=NULL, geneLabels=NULL, returniGraphs=FALSE, 
-	plotType="dynamic", fileName=NULL, 
-	plotAllNodesNetwork=TRUE, plotOnlyConnectedNodesNetwork=FALSE,  
-	plotClassifcationGenesNetwork=FALSE, 
-	labelSize=0.5, vertexSize=NULL, width=NULL, height=NULL, verbose=TRUE)
+genesInfo=NULL, geneLabels=NULL, returniGraphs=FALSE, 
+plotType="dynamic", fileName=NULL, 
+plotAllNodesNetwork=TRUE, plotOnlyConnectedNodesNetwork=FALSE,  
+plotClassifcationGenesNetwork=FALSE, 
+labelSize=0.5, vertexSize=NULL, width=NULL, height=NULL, verbose=TRUE)
 }
 \arguments{
-  \item{genesNetwork}{
+ \item{genesNetwork}{
 List of GenesNetwork returned by \code{\link[geNetClassifier:geNetClassifier]{geNetClassifier}}. (\code{@genesNetwork})
 }
   \item{classificationGenes}{
@@ -36,7 +36,7 @@ List or data.frame with the properties of the genes to plot: \code{genesDetails(
 Vector or Matrix. Gene name, ID or label which should be shown in the returned results and plots.
 }
   \item{returniGraphs}{
-Logical. If TRUE, returns a list with the plotted networks as igraph objects.
+deprecated. A list with the plotted networks as igraph objects is always returned (see \code{\link[base:invisible]{invisible}}), assign it to a variable if needed.
 }
   \item{plotType}{
 Character. "dynamic": Interactive plot. "static": One canvas split for the different networks. "pdf": All the networks are saved into a pdf file.
@@ -91,7 +91,7 @@ Bioinformatics and Functional Genomics Group. Centro de Investigacion del Cancer
 Note: The slot @genesNetwork returned by geNetClassifier is a List of GenesNetworks!
 }
 \examples{
-library(geNetClassifier)
+
 data(leukemiasClassifier)
 
 # Step 1: Select a network or sub network
@@ -113,16 +113,16 @@ plotNetwork(clGenesSubNet$ALL, genesInfo=clGenesInfo)
 
 # Plot AML network containing only the conected nodes:
 plotNetwork(clGenesSubNet$ALL, genesInfo=clGenesInfo, 
-    plotAllNodesNetwork=FALSE, plotOnlyConnectedNodesNetwork=TRUE)
+ plotAllNodesNetwork=FALSE, plotOnlyConnectedNodesNetwork=TRUE)
 
 # The equivalent code to the plot geNetClassifier creates by default is:
 topRanking <- getTopRanking(leukemiasClassifier@genesRanking, numGenesClass=100)
 netTopGenes <- getSubNetwork(leukemiasClassifier@genesNetwork, 
-    getRanking(topRanking, showGeneID=TRUE)$geneID)
+ getRanking(topRanking, showGeneID=TRUE)$geneID)
 plotNetwork(netTopGenes,  classificationGenes=leukemiasClassifier@classificationGenes, 
-	genesRanking=topRanking, plotAllNodesNetwork=TRUE, 
-	plotOnlyConnectedNodesNetwork=TRUE, returniGraphs=FALSE, 
-    plotType="pdf", labelSize=0.3, fileName="leukemiasClassifier")
+ genesRanking=topRanking, plotAllNodesNetwork=TRUE, 
+ plotOnlyConnectedNodesNetwork=TRUE, plotType="pdf", 
+ labelSize=0.3, fileName="leukemiasClassifier")
 
 # In order to save the network as text file, you can use:
 network2txt(leukemiasClassifier@genesNetwork, filePrefix="leukemiasNetwork")

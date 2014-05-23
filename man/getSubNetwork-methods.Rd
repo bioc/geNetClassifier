@@ -27,7 +27,7 @@ Logical. If true, shows warnings if the given genes are not in the network.
 \value{
 A \code{\link[geNetClassifier:GenesNetwork-class]{GenesNetwork}} or list of networks between the given genes.
 }
-				
+
 \seealso{
 Main package function and classifier training:
 \code{\link[geNetClassifier:geNetClassifier]{geNetClassifier}} \cr
@@ -40,8 +40,3 @@ leukemiasClassifier@classificationGenes)
 getSubNetwork(leukemiasClassifier@genesNetwork, getTopRanking(leukemiasClassifier@genesRanking, numGenesClass=30))
 }
 \keyword{methods}
-
-
-
-
-

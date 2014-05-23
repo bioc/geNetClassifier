@@ -11,7 +11,6 @@ Returns the number of nodes (genes) in the network.
 \section{Methods}{
 \describe{
 \item{\code{signature(object = "GenesNetwork")}}{
-%%  ~~describe this method here~~
 }
 }}
 \seealso{

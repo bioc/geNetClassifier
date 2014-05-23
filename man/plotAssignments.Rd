@@ -8,8 +8,8 @@ Plots the assignment probabilities of a previous query.
 }
 \usage{
 plotAssignments(queryResult, realLabels, 
-    minProbAssignCoeff = 1, minDiffAssignCoeff = 0.8, 
-	totalNumberOfClasses = NULL, pointSize=0.8)
+  minProbAssignCoeff = 1, minDiffAssignCoeff = 0.8, 
+  totalNumberOfClasses = NULL, pointSize=0.8, identify = FALSE)
 }
 \arguments{
   \item{queryResult}{
@@ -30,10 +30,13 @@ Numeric. Total number of classes the classifier was trained with. The assignment
 \item{pointSize}{
 Numeric. Point size modifier.
 }
+\item{identify}{
+Logical. If TRUE and supported (X11 or quartz devices), the plot will be interactive and clicking on a point will identify the sample the point represents.  Press ESC or right-click on the plot screen to exit.
+}
 }
 
 \value{
-Plot. If the plot is shown on the usual X11 or quartz devices, clicking on a point will identify the sample the point represents.  Press ESC or  right-click on the plot screen to finish.
+Plot. 
 }
 
 \seealso{
@@ -44,7 +47,7 @@ Querying the classifier: \code{\link[geNetClassifier:queryGeNetClassifier]{query
 ##########################
 ## Classifier training
 ##########################
-library(geNetClassifier)
+
 # Load an expressionSet:
 library(leukemiasEset)
 data(leukemiasEset)

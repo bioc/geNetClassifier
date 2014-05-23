@@ -11,9 +11,9 @@ Plot GeNetClassifierReturn
 Allows generating the plots from the objet created by \code{\link[geNetClassifier:geNetClassifier]{geNetClassifier}}. 
 }
 \usage{
-\method{plot}{GeNetClassifierReturn}(x, y="missing", fileName = NULL, lpThreshold = 0.75, 
+\method{plot}{GeNetClassifierReturn}(x, y="missing", fileName = NULL, lpThreshold = 0.95, 
     numGenesLpPlot = 1000, numGenesNetworkPlot = 100, 
-	geneLabels = NULL, verbose = TRUE, ...)
+    geneLabels = NULL, verbose = TRUE, ...)
 }
 \arguments{
   \item{x}{
@@ -58,7 +58,7 @@ Other plotting functions: \cr
 - \code{\link[geNetClassifier:plotNetwork]{plotNetwork}}\cr
 }
 \examples{
-library(geNetClassifier)
+
 
 # Train or load an already trained classifier
 data(leukemiasClassifier)

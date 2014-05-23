@@ -32,11 +32,9 @@
 \SweaveOpts{concordance=TRUE}
 \maketitle 
 \begin{center}
-Version: 1.2
+Version: 1.6
 \end{center}
 \tableofcontents
-
-
 
 \newpage
 \section{Introduction to \textit{geNetClassifier}}
@@ -118,7 +116,7 @@ CEL files were preprocessed using an alternative Chip Description File (CDF), wh
 To translate these Ensembl gene IDs into Gene Symbols for easier reading, the optional argument \textit{geneLabels} from \textit{geNetClassifier} can be used. This option allows to extend the annotation and labelling of the genes by providing a table that contains the gene symbol and other characteristics of the genes in the \textit{expresssionSet}. This option can be used with any annotation (i.e. Bioconductor's \textit{org.Hs.eg.db} package) as long as it is provided in the correct format. However, for increased consistency between versions, when using \textit{GATExplorer} CDF, we recomend to also use \textit{GATExplorer} annotation files. Annotation files with the Gene Symbol corresponding to each Ensembl gene ID can be found at: \begin{small}\url{http://bioinfow.dep.usal.es/xgate/mapping/mapping.php?content=annotationfiles}\end{small}. The one used in this example is the \textit{Human Genes} R annotation file. Once it is downloaded, unzip in your working directory, and load it into your R session:
 <<eval=FALSE>>=
 load("genes-human-annotation.R")
-geneSymbols <- genes.human.Annotation[,"gene_symbol",drop=F]
+geneSymbols <- genes.human.Annotation[,"gene_symbol",drop=FALSE]
 head(geneSymbols)
 @
 
@@ -183,7 +181,7 @@ Of course, you can use your own dataset instead:
 <<eval=FALSE>>=
 load(file="...")
 @
-Then, select the samples to train the classifier. Note that to run \textit{geNetClassifier} there should be the \textbf{same number of samples in each class}. A balanced number of samples allows an even exploration of each class and provides better classification. \\
+Then, select the samples to train the classifier. Note that to run \textit{geNetClassifier} it is highly recommended to have the \textbf{same number of samples in each class}. A balanced number of samples allows an even exploration of each class and provides better classification. \\
 
 In \textit{leukemiasEset} there are 60 samples: 12 of each class (ALL, AML, CLL, CML and NoL). We will select 10 samples from each class to execute \textit{geNetClassifier()}, and leave 2 for external validation of the resulting classifier. In this way, it makes a total of 50 samples for the \textit{training} and 10 samples for the \textit{validation}.
 <<>>=
@@ -209,7 +207,7 @@ The algorithm input also includes many other arguments that allow to personalize
 geNetClassifier(eset, sampleLabels, plotsName=NULL, buildClassifier=TRUE, 
 estimateGError=FALSE, calculateNetwork=TRUE, labelsOrder=NULL, 
 geneLabels=NULL, numGenesNetworkPlot=100, minGenesTrain=1, 
-maxGenesTrain=100, continueZeroError=FALSE, numIters=6, lpThreshold=0.75, 
+maxGenesTrain=100, continueZeroError=FALSE, numIters=6, lpThreshold=0.95, 
 numDecimals=3, removeCorrelations=FALSE, correlationsThreshold=0.8, 
 removeInteractions=FALSE, interactionsThreshold=0.5, 
 skipInteractions=FALSE, minProbAssignCoeff=1, minDiffAssignCoeff=0.8, 
@@ -349,20 +347,20 @@ By default, the genes in \textit{geNetClassifier} are named with the ID included
 
 The analyses of the distributions of genes within the ranking allows to compare the classes and identifying the set of genes assigned to each class at a given threshold of significance (provided by the posterior probability cutoff). In this way, the algorithm provides a framework to compare the biological states studied, i.e. the biological or pathological conditions tested in the classes.\\
 
-The package \textit{geNetClassifier} returns an output plot of the distribution of rankings \textit{versus} the posterior probabilities for each class. The plot includes a threshold of posterior probability \textit{lpThreshold=0.75} (which can be changed by the user) and indicates the genes considered 'significant' for each one of the analyzed classes. This analysis of the ranking provides a way to find the size of the \textit{gene signature} assigned to each disease, compared to the other diseases studied in the same study.\\
+The package \textit{geNetClassifier} returns an output plot of the distribution of rankings \textit{versus} the posterior probabilities for each class. The plot includes a threshold of posterior probability \textit{lpThreshold=0.95} (which can be changed by the user) and indicates the genes considered 'significant' for each one of the analyzed classes. This analysis of the ranking provides a way to find the size of the \textit{gene signature} assigned to each disease, compared to the other diseases studied in the same study.\\
 
 \begin{figure}[H]
       \centering
-      \includegraphics[width=0.7\textwidth]{Fig2significantGeneswithoutNoL}
+      \includegraphics[width=0.6\textwidth]{Fig2significantGeneswithoutNoL}
   \caption{Plot of the posterior probabilities of the genes of 4 leukemia classes, ordering the genes according to their rank.}
   \label{fig:significantGeneswithoutNoL}
 \end{figure}
 
-The analysis of the genes ranking done for the 4 leukemia subtypes included in the example dataset shows that some disease subtypes, e.g. CLL, include many genes (2028 genes at lpThreshold 0.75) but other subtypes, e.g. AML, include less genes (308 genes). A much larger \textit{gene signature} may indicate that CLL is a more \textit{systemic} disease by affecting many more genes than AML. These observations are clear, but the biological interpretation may not be so clear. In any case, the results provided by \textit{geNetClassifier} algorithm may help to unravel disease sub-types differences based on the gene signatures.\\
+The analysis of the genes ranking done for the 4 leukemia subtypes included in the example dataset shows that some disease subtypes, e.g. CLL, include many genes (2028 genes at lpThreshold 0.95) but other subtypes, e.g. AML, include less genes (308 genes). A much larger \textit{gene signature} may indicate that CLL is a more \textit{systemic} disease by affecting many more genes than AML. These observations are clear, but the biological interpretation may not be so clear. In any case, the results provided by \textit{geNetClassifier} algorithm may help to unravel disease sub-types differences based on the gene signatures.\\
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\textwidth]{Fig3overlap}
+\includegraphics[width=0.6\textwidth]{Fig3overlap}
   \caption{Scheme representing the overlap between the sets of genes that each disease may affect. \textit{geNetClassifier} explores all the genes that affect each disease (\textbf{ovals}) and selects the genes that are unique (differentially expressed) to each disease. In this way, the selected genes (\textbf{circles}) represent the significant genes for each disease (i.e. the genes with posterior probability over the threshold found for each class) .
     }
 %    Scheme representing the overlap between the gene sets affected by each disease (ovals). \textit{geNetClassifier} identifies the genes that are unique (differentially expressed) in each disease. The filled ovals represent the significant genes for each disease (genes with posterior probability over the threshold
@@ -370,7 +368,7 @@ The analysis of the genes ranking done for the 4 leukemia subtypes included in t
   \label{fig:overlap}
 \end{figure}
 
-The number of significant genes with posterior probability over the threshold (by default \textit{lpThreshold=0.75}) are provided using \textit{numSignificantGenes}:
+The number of significant genes with posterior probability over the threshold (by default \textit{lpThreshold=0.95}) are provided using \textit{numSignificantGenes}:
 % numGenes(leukemiasClassifier@genesRanking)
 <<>>=
 numSignificantGenes(leukemiasClassifier@genesRanking)
@@ -539,7 +537,7 @@ function(x) write.table(getEdges(x),
 file=paste("leukemiaNtw_",getEdges(x)[1,"class1"],".txt",sep="")))
 @
 
-These flat text files allow to export the networks to external software (e.g. \textit{Cytoscape}, http://www.cytoscape.org). Of course, the networks can also be used with other R packages (e.g. igraph using the  \textit{returniGraphs} option in \textit{plotNetwork()}. See section \ref{sec:plotNetwork}.) or exported using direct R connectors (e.g. RCytoscape). For more information see the class help \textit{?GenesNetwork}. 
+These flat text files allow to export the networks to external software (e.g. \textit{Cytoscape}, http://www.cytoscape.org). Of course, the networks can also be used with other R packages (e.g. \textit{plotNetwork() returns an invisible list containing the igraph objects}. See section \ref{sec:plotNetwork}.) or exported using direct R connectors (e.g. RCytoscape). For more information see the class help \textit{?GenesNetwork}. 
 %\newpage
 \section{External validation: query with new samples of known class}
 \label{sec:extVal}
@@ -707,32 +705,70 @@ ranking <- calculateGenesRanking(leukemiasEset[,trainSamples],
 The function \textit{plotExpressionProfiles()} generates an overview of the expression profile of each gene along all the samples contained in the studied dataset. The plot will be saved as a PDF if \textit{fileName} is indicated. The parameter \textit{geneLabels} can be used to show a different name to the one included in the expression matrix (i.e. gene symbol instead of ENSEMBL ID or \textit{Affymetrix} ID).\\
 
 To plot the expression of 4 specific genes across the samples included in the leukemia's set:
-<<eval=FALSE>>=
-myGenes <- c("ENSG00000169575", "ENSG00000078399", 
-"ENSG00000176890", "ENSG00000121742")
-plotExpressionProfiles(leukemiasEset, myGenes, sampleLabels="LeukemiaType")
+
+<<eval=TRUE, echo=FALSE>>=
+data(geneSymbols)
 @
+<<eval=FALSE>>=
+data(geneSymbols)
+topGenes <- getRanking(
+ getTopRanking(leukemiasClassifier@classificationGenes,numGenesClass=1), 
+ showGeneID=TRUE)$geneID
+plotExpressionProfiles(leukemiasEset, topGenes[,c("ALL","AML"), drop=FALSE], 
+ sampleLabels="LeukemiaType", geneLabels=geneSymbols)
+@
+
 \begin{figure}[H]
       \centering
-      \includegraphics[width=0.60\textwidth]{Fig8expressionProfilePlot}
-  \caption{ Plot of the expression profiles across 60 samples of 4 genes chosen.}
+      \includegraphics[width=0.90\textwidth]{Fig8expressionProfilePlot_2g}
+  \caption{ Plot of the expression profiles across 60 samples of 2 genes.}
   \label{fig:expressionProfilePlot}
 \end{figure}
 
-To plot the expression of all the genes used for training the classifier use:
+If instead of a list of genes, a geNetClassifierReturn object is provided, it will plot the expression of all the genes used for training the classifier:
 <<eval=FALSE>>=
 plotExpressionProfiles(leukemiasEset[,trainSamples], leukemiasClassifier,
-sampleLabels="LeukemiaType", fileName="leukExprs_trainSamples.pdf")
+ sampleLabels="LeukemiaType", fileName="leukExprs_trainSamples.pdf")
 @
 
-To plot the expression of all the classification genes of a specific class, for example AML:
+To plot the expression of all the genes chosen for classification for a specific class, for example AML:
 <<eval=FALSE>>=
 classGenes <- getRanking(leukemiasClassifier@classificationGenes, 
-showGeneID=TRUE)$geneID[,"AML"]
+ showGeneID=TRUE)$geneID[,"AML"]
 plotExpressionProfiles(leukemiasEset, genes=classGenes, 
-sampleLabels="LeukemiaType", fileName="AML.pdf", geneLabels=geneSymbols)
+ sampleLabels="LeukemiaType", geneLabels=geneSymbols, fileName="AML_genes.pdf")
 @
-%$
+
+\newpage
+These plots can be modified in several ways, for example coloring specific samples or classes, or plotting the expression as boxplot. See \emph{?plotExpressionProfiles} for more details.\\
+
+- Coloring specific samples or classes:
+<<eval=FALSE>>=
+plotExpressionProfiles(leukemiasEset, genes=topGenes[,3, drop=FALSE], 
+ sampleLabels="LeukemiaType", 
+ showMean=TRUE, identify=FALSE,
+ sampleColors=c("grey","red")
+ [(sampleNames(leukemiasEset)%in% c("GSM331386.CEL","GSM331392.CEL"))+1])
+@
+<<eval=FALSE>>=
+plotExpressionProfiles(leukemiasEset, genes=topGenes[,3, drop=FALSE], 
+ sampleLabels="LeukemiaType", 
+ showMean=TRUE, identify=FALSE,
+ classColors=c("red","red", "blue","red","red"))
+@
+- Plotting the expression as boxplot (grouped by classes):
+<<eval=FALSE>>=
+plotExpressionProfiles(leukemiasEset, genes=topGenes[,3, drop=FALSE],
+ sampleLabels="LeukemiaType", 
+ type="boxplot", geneLabels=geneSymbols, sameScale=FALSE)
+@
+\begin{figure}[H]
+      \centering
+      \includegraphics[width=0.90\textwidth]{Fig9expressionProfilePlot_B}
+  \caption{Two different versions of expression plot.}
+  \label{fig:expressionProfilePlot_B}
+\end{figure}
+
 
 \newpage
 \subsection{Plot Genes Discriminant Power: \textit{plotDiscriminantPower()}}
@@ -762,14 +798,14 @@ The next figure uses the same function to plot the top genes of a class, present
 <<eval=FALSE, echo=TRUE>>=
 discPowerTable <- plotDiscriminantPower(leukemiasClassifier, 
 classificationGenes=getRanking(leukemiasClassifier@classificationGenes,
-showGeneID=T)$geneID[1:4,"AML",drop=FALSE], returnTable=TRUE)
+showGeneID=TRUE)$geneID[1:4,"AML",drop=FALSE], returnTable=TRUE)
 @
 \begin{figure}[H]
 \centering
 <<fig=TRUE, echo=FALSE>>=
 discPowerTable <- plotDiscriminantPower(leukemiasClassifier, 
 classificationGenes=getRanking(leukemiasClassifier@classificationGenes,
-showGeneID=T)$geneID[1:4,"AML",drop=FALSE], returnTable=TRUE)
+showGeneID=TRUE)$geneID[1:4,"AML",drop=FALSE], returnTable=TRUE)
 @
 %$
   \caption{Plot of the discriminant power of the 4 genes that best discriminate AML class from the other classes. The figures indicate that MEIS1 (ENSG00000143995) presents the highest discriminant power. This gene encodes a homeobox protein that has been involved in myeloid leukemia. A high discriminant power can help to identify gene markers.}
@@ -847,8 +883,7 @@ plotNetwork(genesNetwork=top100gSubNet,
 classificationGenes=leukemiasClassifier@classificationGenes, 
 genesRanking=top100gRanking, plotAllNodesNetwork=TRUE, 
 plotOnlyConnectedNodesNetwork=TRUE, labelSize=0.4, 
-returniGraphs=FALSE, plotType="pdf", 
-fileName="leukemiasNetwork")
+plotType="pdf", fileName="leukemiasNetwork")
 @
 %$
 

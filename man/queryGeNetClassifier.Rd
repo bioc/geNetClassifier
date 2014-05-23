@@ -70,7 +70,7 @@ External validation stats: \code{\link[geNetClassifier:externalValidation.stats]
 ##########################
 ## Classifier training
 ##########################
-library(geNetClassifier)
+
 # Load an expressionSet:
 library(leukemiasEset)
 data(leukemiasEset)
@@ -117,7 +117,7 @@ queryResult$probabilities[,queryResult_AssignAll$class=="NotAssigned"]
 confMatrix <- table(leukemiasEset[,querySamples]$LeukemiaType, 
     queryResult_AssignAll$class)
 # New accuracy, call rate, sensitivity and specificity:
-externalValidation.stats(confMatrix)	
+externalValidation.stats(confMatrix)
 # Probability matrix for the assigned samples
 externalValidation.probMatrix(queryResult, leukemiasEset[,querySamples]$LeukemiaType)
 

@@ -46,7 +46,7 @@ Query the classifier: \code{\link[geNetClassifier:queryGeNetClassifier]{queryGeN
 ##########################
 ## Classifier training
 ##########################
-library(geNetClassifier)
+
 # Load an expressionSet:
 library(leukemiasEset)
 data(leukemiasEset)

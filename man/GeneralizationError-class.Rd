@@ -25,9 +25,9 @@ where errors are likely to occur even though there were not actual errors in the
   }
 }
 \section{Methods}{
-  \describe{
-    \item{overview}{\code{signature(object = "GeneralizationError")}: Shows an overview of all the slots in the object. }
-	 }
+\describe{
+\item{overview}{\code{signature(object = "GeneralizationError")}: Shows an overview of all the slots in the object. }
+}
 }
 \author{
 Bioinformatics and Functional Genomics Group. Centro de Investigacion del Cancer (CIC-IBMCC, USAL-CSIC). Salamanca. Spain
@@ -40,7 +40,7 @@ Main package function and classifier training:
 ######
 # Load data and train a classifier
 ######
-library(geNetClassifier)
+
 # Load an expressionSet:
 library(leukemiasEset)
 data(leukemiasEset)

@@ -38,7 +38,7 @@ This method's class (\code{\link[geNetClassifier:GenesNetwork-class]{GenesNetwor
 
 \examples{
 ## Load or calculate a network:
-library(geNetClassifier)
+
 data(leukemiasClassifier)
 
 ## Export as text:

@@ -6,13 +6,13 @@
 \alias{edges,GenesNetwork-method}
 \title{Edges in the network.}
 \description{
-	Returns the network's edges (relations between genes).
+Returns the network's edges (relations between genes).
 } 
 \section{Methods}{
 \describe{
 
 \item{\code{signature(object = "GenesNetwork")}}{
-%%  ~~describe this method here~~
+
 }
 }}
 \seealso{

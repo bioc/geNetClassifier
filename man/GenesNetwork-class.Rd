@@ -21,14 +21,14 @@
 Contains the network returned by \code{\link[geNetClassifier:geNetClassifier]{geNetClassifier}}. (Slot: \code{@genesNetwork})
 }
 \section{Methods}{
-  \describe{
-    \item{getNodes}{\code{signature(object = "GenesNetwork")}: Returns the network nodes (genes). }
-	\item{getEdges}{\code{signature(object = "GenesNetwork")}: Returns the network edges (relationships). }
-    \item{getNumNodes}{\code{signature(object = "GenesNetwork")}: Returns the number of nodes (genes) in the network.}
-    \item{getNumEdges}{\code{signature(object = "GenesNetwork")}: Returns the number of edges (relationships) in the network, }
-	\item{getSubNetwork}{\code{signature(network = "GenesNetwork")}: Returns a new network containing only the given genes. }
-	\item{network2txt}{\code{signature(network = "GenesNetwork")}: Exports the network as text file. }
-	 }
+\describe{
+\item{getNodes}{\code{signature(object = "GenesNetwork")}: Returns the network nodes (genes). }
+\item{getEdges}{\code{signature(object = "GenesNetwork")}: Returns the network edges (relationships). }
+\item{getNumNodes}{\code{signature(object = "GenesNetwork")}: Returns the number of nodes (genes) in the network.}
+\item{getNumEdges}{\code{signature(object = "GenesNetwork")}: Returns the number of edges (relationships) in the network, }
+\item{getSubNetwork}{\code{signature(network = "GenesNetwork")}: Returns a new network containing only the given genes. }
+\item{network2txt}{\code{signature(network = "GenesNetwork")}: Exports the network as text file. }
+}
 }
 \author{
 Bioinformatics and Functional Genomics Group. Centro de Investigacion del Cancer (CIC-IBMCC, USAL-CSIC). Salamanca. Spain
@@ -42,7 +42,7 @@ Plot network or export as iGraph: \code{\link[geNetClassifier:plotNetwork]{plotN
 ######
 # Load data and train a classifier
 ######
-library(geNetClassifier)
+
 # Load an expressionSet:
 library(leukemiasEset)
 data(leukemiasEset)

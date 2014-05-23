@@ -45,7 +45,7 @@ Generating the probability matrix: \code{\link[geNetClassifier:externalValidatio
 ##########################
 ## Classifier training
 ##########################
-library(geNetClassifier)
+
 # Load an expressionSet:
 library(leukemiasEset)
 data(leukemiasEset)
@@ -73,8 +73,7 @@ queryResult <- queryGeNetClassifier(leukemiasClassifier, leukemiasEset[,testSamp
 confMatrix <- table(leukemiasEset[,testSamples]$LeukemiaType,queryResult$class)
 
 # Calculate its accuracy, call rate, sensitivity and specificity:
-externalValidation.stats(confMatrix)	
-
+externalValidation.stats(confMatrix)
 }
 \keyword{classif }
 

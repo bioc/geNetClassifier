@@ -26,23 +26,23 @@ leukemiasClassifier@classifier
 numGenes(leukemiasClassifier@classificationGenes)
 leukemiasClassifier@classificationGenes
 genesDetails(leukemiasClassifier@classificationGenes)
-		
+
 # Generalization Error estimated by cross-validation:
 # 	leukemiasClassifier@generalizationError
-#		overview(leukemiasClassifier@generalizationError)
+#	overview(leukemiasClassifier@generalizationError)
 	
 # List of Networks by classes:
-	leukemiasClassifier@genesNetwork
+leukemiasClassifier@genesNetwork
 
 # Access to the nodes or edges of each network:
-	getEdges(leukemiasClassifier@genesNetwork$AML)[1:5,]
-	getNodes(leukemiasClassifier@genesNetwork$AML)[1:50]	
+getEdges(leukemiasClassifier@genesNetwork$AML)[1:5,]
+getNodes(leukemiasClassifier@genesNetwork$AML)[1:50]	
 		
 # Global genes ranking:
-	leukemiasClassifier@genesRanking
-		numGenes(leukemiasClassifier@genesRanking)
-		numSignificantGenes(leukemiasClassifier@genesRanking)
-#		getTopRanking(leukemiasClassifier@genesRanking, 10)
+leukemiasClassifier@genesRanking
+numGenes(leukemiasClassifier@genesRanking)
+numSignificantGenes(leukemiasClassifier@genesRanking)
+# getTopRanking(leukemiasClassifier@genesRanking, 10)
 }
 \keyword{classif}
 \keyword{leukemia}

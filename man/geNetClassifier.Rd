@@ -10,17 +10,17 @@ Allows to train the classifier, calculate the genes network...
 }
 \usage{
 geNetClassifier(eset, sampleLabels, plotsName = NULL, 
-	buildClassifier = TRUE, estimateGError = FALSE, 
-	calculateNetwork = TRUE, labelsOrder = NULL, geneLabels = NULL, 
-	numGenesNetworkPlot = 100, 
-	minGenesTrain = 1, maxGenesTrain = 100, continueZeroError = FALSE,
-	numIters = 6, lpThreshold = 0.75, numDecimals = 3,
-	removeCorrelations = FALSE, correlationsThreshold = 0.8, 
-	removeInteractions = FALSE, interactionsThreshold = 0.5, 
-	minProbAssignCoeff = 1, minDiffAssignCoeff = 0.8, 
-	IQRfilterPercentage = 0, skipInteractions = FALSE, 
-	precalcGenesNetwork = NULL, precalcGenesRanking = NULL, 
-	returnAllGenesRanking = TRUE, verbose = TRUE)
+buildClassifier = TRUE, estimateGError = FALSE, 
+calculateNetwork = TRUE, labelsOrder = NULL, geneLabels = NULL, 
+numGenesNetworkPlot = 100, 
+minGenesTrain = 1, maxGenesTrain = 100, continueZeroError = FALSE,
+numIters = 6, lpThreshold = 0.95, numDecimals = 3,
+removeCorrelations = FALSE, correlationsThreshold = 0.8, 
+removeInteractions = FALSE, interactionsThreshold = 0.5, 
+minProbAssignCoeff = 1, minDiffAssignCoeff = 0.8, 
+IQRfilterPercentage = 0, skipInteractions = TRUE, 
+precalcGenesNetwork = NULL, precalcGenesRanking = NULL, 
+returnAllGenesRanking = TRUE, verbose = TRUE)
 }
 \arguments{
  \item{eset}{
@@ -157,7 +157,7 @@ All functions in the package: \code{\link[geNetClassifier:geNetClassifier-packag
 ########
 # Load libraries and training data
 ########
-library(geNetClassifier)
+
 # Load an expressionSet:
 library(leukemiasEset)
 data(leukemiasEset)

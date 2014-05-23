@@ -42,7 +42,7 @@ External validation stats: \code{\link[geNetClassifier:externalValidation.stats]
 ##########################
 ## Classifier training
 ##########################
-library(geNetClassifier)
+
 # Load an expressionSet:
 library(leukemiasEset)
 data(leukemiasEset)

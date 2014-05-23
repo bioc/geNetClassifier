@@ -9,8 +9,8 @@ Calculates and plots the Discriminant Power of the genes in the given classifier
 }
 \usage{
 plotDiscriminantPower(classifier, classificationGenes = NULL, 
-    geneLabels = NULL, classNames = NULL, plotDP = TRUE, 
-	fileName = NULL, returnTable = FALSE, verbose = TRUE)
+geneLabels = NULL, classNames = NULL, plotDP = TRUE, 
+fileName = NULL, returnTable = FALSE, verbose = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -62,7 +62,7 @@ Main package function and classifier training:
 ######
 # Load data and train a classifier
 ######
-library(geNetClassifier)
+
 # Load an expressionSet:
 library(leukemiasEset)
 data(leukemiasEset)

@@ -9,11 +9,11 @@ Calculates the genes ranking and/or plots the posterior probability of the genes
 }
 \usage{
 calculateGenesRanking(eset=NULL, sampleLabels=NULL, 
-	numGenesPlot=1000, plotTitle="Significant genes", plotLp=TRUE, 
-	lpThreshold = 0.75, numSignificantGenesType="ranked", 
-	returnRanking="full", nullHiphothesisFilter=0.95,  nGenesExprDiff=1000, 
-	geneLabels=NULL, precalcGenesRanking=NULL, IQRfilterPercentage= 0, 
-	verbose=TRUE)
+numGenesPlot=1000, plotTitle="Significant genes", plotLp=TRUE, 
+lpThreshold = 0.95, numSignificantGenesType="ranked", 
+returnRanking="full", nullHiphothesisFilter=0.95,  nGenesExprDiff=1000, 
+geneLabels=NULL, precalcGenesRanking=NULL, IQRfilterPercentage= 0, 
+verbose=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -95,7 +95,7 @@ This posterior probability is calculated by \code{\link[EBarrays:emfit]{emfit (p
 \seealso{\code{\link[geNetClassifier:plot.GenesRanking]{plot.GenesRanking}} is a shortcut to plotting a previusly calculated genes ranking. \cr
 i.e. \code{plot(genesRanking)}}
 \examples{
-library(geNetClassifier)
+
 # Load an expressionSet:
 library(leukemiasEset)
 data(leukemiasEset)
