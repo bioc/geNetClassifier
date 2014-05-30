@@ -514,7 +514,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
             
 
             # Train classifier
-            finalClassifier  <-  svm(x=TRUE(esetFilteredDataFrame[buildGenesVector, trainSamples]), y=sampleLabels[trainSamples], C=1, kernel="linear", probability=TRUE )
+            finalClassifier  <-  svm(x=t(esetFilteredDataFrame[buildGenesVector, trainSamples, drop=FALSE]), y=sampleLabels[trainSamples], C=1, kernel="linear", probability=TRUE )           
             
                             # If there is only 1 gene, $SV is not labeled -> SV.dif & query.predictor do not work
                             if (is.null(dimnames(finalClassifier$SV)) && numClasses ==2)
