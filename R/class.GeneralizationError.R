@@ -48,7 +48,7 @@ setClass(Class="GeneralizationError",
     # When typing the GenesRanking object, doesn't show the whole object content, but the ranking of the top10 genes of each class
     setMethod("show", "GeneralizationError", function(object)
     {
-        cat("Classifier's estimated accuracy, sensitivity and specificity:\n")
+        cat("Estimated accuracy, sensitivity and specificity for the classifier:\n")
         print(object@accuracy)
         print(object@sensitivitySpecificity)
         cat('\nTo see all available statistics type "overview(EXAMPLE@generalizationError)"\n')
