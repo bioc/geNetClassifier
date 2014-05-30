@@ -260,7 +260,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
         lessMaxGenes <- (maxGenesTrain > availableGenes)
         if(any(lessMaxGenes))
         {
-            warning(paste("There are not ",maxGenesTrain[1]," non-redundant genes for some of the classes. These available genes will be used instead. If they are not enough, try lowering 'lpThreshold':",sep=""))
+            warning(paste("There are not ",maxGenesTrain[1]," non-redundant genes for some of the classes. These available genes will be used instead. If they are not enough, try lowering 'lpThreshold':",sep=""), immediate.=TRUE)
             maxGenesTrain[which(lessMaxGenes)] <- availableGenes[which(lessMaxGenes)]
             print(maxGenesTrain[which(lessMaxGenes)])
         }
