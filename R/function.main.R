@@ -51,14 +51,14 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     }else 
     {
         names(sampleLabels)<-colnames(eset)
-        warning("The data labels vector is not named, it will be assumed the labels are in order: the first label applies to the first sample... ", immediate. = TRUE)
+        warning("The data labels vector is not named, it is assumed the labels are in order: the first label applies to the first sample... ")
     }    
     if(!is.null(labelsOrder))
     {
         if(!is.vector(labelsOrder) && !is.factor(labelsOrder)) stop("The labels order should be either a vector or a factor")
         if(any(!labelsOrder %in% levels(sampleLabels)) || any(!levels(sampleLabels) %in% labelsOrder)) 
         {
-            warning("The labelsOrder doesn't match the samples labels. It will be ignored.")
+            warning("The labelsOrder does not match the samples labels. It will be ignored.")
             labelsOrder <- NULL
         }
     }
@@ -79,7 +79,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
         if (numDecimals<0 || numDecimals>7) 
         {
         numDecimals <- 3
-        warning("The argument 'numDecimals' should be a number between 0 and 7. The default value (3) will be used.", immediate. = TRUE)
+        warning("The argument 'numDecimals' should be a number between 0 and 7. The default value (3) is used.")
         }
     }
     if(!is.numeric(IQRfilterPercentage) || (IQRfilterPercentage>=1 || IQRfilterPercentage <0)) stop("The filter percentage should be a probability (a number between 0 and 1).")
@@ -95,7 +95,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     if(!is.logical(estimateGError))  stop("The argument estimateGError should be either TRUE or FALSE.")
     if(!is.logical(calculateNetwork))  stop("The argument calculateNetwork should be either TRUE or FALSE.")
     if(!is.logical(returnTopGenesNetwork)) returnTopGenesNetwork <- FALSE
-    if(skipInteractions && calculateNetwork) warning("The network will be calculated, but without interactions", immediate. = TRUE)
+    if(skipInteractions && calculateNetwork) if(verbose) message("The network will be calculated, but without interactions")
     if((removeInteractions || removeCorrelations) && (!calculateNetwork && is.null(genesNetwork))) 
     {
         warning("In order to remove correlations or interactions, the genes network needs to be calculated.")
@@ -108,7 +108,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     }
     if((!buildClassifier && !estimateGError) && (calculateNetwork && !returnTopGenesNetwork)) 
     {
-        warning("The genes network will be calculated but not used (buildClassifier and estimateGError are False) so it will be returned although it was not requested.", immediate. = TRUE)
+        warning("The genes network will be calculated but not used (buildClassifier and estimateGError are False) so it will be returned although it was not requested.")
         returnTopGenesNetwork <- TRUE # Otherwise only the genes ranking will be returned (the network will be lost & not used)
     }
     if ((!calculateNetwork&& is.null(genesNetwork)) && returnTopGenesNetwork) stop("The genes network cannot be returned without providing or calculating it.")
@@ -147,7 +147,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     
     # Check if there are the same number of samples for all the classes
     sameNumSamplesClass <- length(table(numElemClass))==0
-     if (!sameNumSamplesClass) warning("It is recommended to have the same number of samples in each class in order to obtain balanced external validation stats.")  
+     if (!sameNumSamplesClass) warning("It is recommended to have the *same* number of samples in each class in order to obtain balanced external validation stats.")  
     if(estimateGError && sameNumSamplesClass) if((unique(numElemClass)%%5)!=0) warning("Since the number of samples is not multiple of 5, some samples might be used as test in several cross-validation loops when estimating the generalization error of the classifier.")
     
     
@@ -179,11 +179,11 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     if(!is.null(genesRankingGlobal) && (sum(!rownames(genesRankingGlobal@postProb) %in% rownames(esetFiltered)) > 0))     # There are genes in the genesRanking which arent in the eset -> Recalculate
     {
         genesRankingGlobal <- NULL
-        warning("The genesRanking given as argument doesn't match the dataset. Recaculculating the genesRanking...", immediate. = TRUE)
+        message("The genesRanking given as argument doesn't match the dataset. Recaculculating the genesRanking...")
     }
     if (!is.null(genesRankingGlobal) &&    any(!rownames(esetFiltered) %in% rownames(genesRankingGlobal@postProb)) )    # There are missing genes from the eset  in the genesranking -> Warning (Most likely ok, just filtered)
     {
-        warning("The genesRanking does not contain all the genes in the expression matrix.", immediate. = TRUE)
+        warning("The genesRanking does not contain all the genes in the expression matrix.")
     }
     # Calculate genesRanking (global) if it was not provided
     if(is.null(genesRankingGlobal))  genesRankingGlobal <- PEB(esetFiltered, sampleLabels, labelsOrder= labelsOrder)
@@ -208,7 +208,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     topGenes <- as.vector(getRanking(getTopRanking(genesRankingGlobal, lpMaxGenes), showGeneID=TRUE, showGeneLabels=FALSE)$geneID)
     topGenes <- topGenes[which(!is.na(topGenes))]
     meanExprDiff <- difMean(esetFiltered[topGenes,], sampleLabels)
-    if(numClasses==2) message(paste("Expression difference calculated for ", colnames(meanExprDiff), " (Reference/control: ", levels(sampleLabels)[1],")", sep=""))
+    if(numClasses==2) print(paste("Expression difference calculated for ", colnames(meanExprDiff), " (Reference/control: ", levels(sampleLabels)[1],")", sep=""))
     genesRankingGlobal <- setProperties(genesRankingGlobal, meanDif=meanExprDiff)
     
     # Calculate genes with Correlations & Interactions
@@ -262,9 +262,9 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
         lessMaxGenes <- (maxGenesTrain > availableGenes)
         if(any(lessMaxGenes))
         {
-            warning(paste("There are not ",maxGenesTrain[1]," non-redundant genes for some of the classes. These available genes will be used instead. If they are not enough, try lowering 'lpThreshold':",sep=""), immediate.=TRUE)
+            warning(paste("There are not ",maxGenesTrain[1]," non-redundant genes for some of the classes. If they are not enough, try rising 'lpThreshold':",sep=""))
             maxGenesTrain[which(lessMaxGenes)] <- availableGenes[which(lessMaxGenes)]
-            print(maxGenesTrain[which(lessMaxGenes)])
+            #print(maxGenesTrain[which(lessMaxGenes)])
         }
     }
     
@@ -552,8 +552,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
         }
         if(!is.null(showWarningMaxGenes)) 
         {
-            warning("The maximum numbers of genes passed as argument is bigger than the number of available genes in some of the internal loops. These were used instead:")
-            print(showWarningMaxGenes)
+            warning(paste("The maximum numbers of genes passed as argument is bigger than the number of available genes in some of the internal loops. These were used instead: ", paste(as.vector(showWarningMaxGenes), collapse=", "), sep=""))
         }
     }
 
@@ -699,7 +698,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
             }
         }
         
-        classificationGenesRanking <- extractGenes (genesRankingGlobal, trainGenes)
+        classificationGenesRanking <- extractGenes(genesRankingGlobal, trainGenes)
         classificationGenesRanking <- setProperties(classificationGenesRanking, discriminantPower = discriminantPower, gERankMean = gERankMean) # isRedundant = isRedundant,
     }
 
@@ -751,8 +750,8 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
                         warning (paste("For these classes, it was needed to take some genes with posterior probability under the ", lpThreshold," threshold:",sep=""))
                         firstWarning<-FALSE
                     }
-                    if(estimateGError) message(paste(names(lp[i]), ": ", lp[i]," genes over threshold. Between ",min(numTrainGenes[,i])," and ",max(numTrainGenes[,i])," genes needed to train the classifier.", sep=""))
-                    else message(paste(names(lp[i]), ": ", lp[i]," genes over threshold. ", numTrainGenes[,i]," genes needed to train the classifier.", sep=""))
+                    if(estimateGError) print(paste(names(lp[i]), ": ", lp[i]," genes over threshold. Between ",min(numTrainGenes[,i])," and ",max(numTrainGenes[,i])," genes needed to train the classifier.", sep=""))
+                    else print(paste(names(lp[i]), ": ", lp[i]," genes over threshold. ", numTrainGenes[,i]," genes needed to train the classifier.", sep=""))
             }
         }
     }

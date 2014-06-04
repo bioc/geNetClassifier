@@ -157,7 +157,7 @@ setClass(Class="GenesRanking",
             showGeneID <- TRUE
         }
             
-        ret <- NULL
+        ret <- list()
         if(showGeneLabels)
         {    
             geneLabels <- apply(object@ord,2,function(x) rownames(object@postProb[x, ,drop=FALSE]))
@@ -176,9 +176,10 @@ setClass(Class="GenesRanking",
             if (is.null(geneIDs))           geneIDs <- matrix(nrow=0, ncol=length(gClasses(object)), byrow=FALSE)
             if (!is.matrix(geneIDs)) geneIDs <- matrix(geneIDs, ncol=length(gClasses(object)), byrow=FALSE)
             if(is.null(colnames(geneIDs))) colnames(geneIDs) <- gClasses(object)  # (Only for 1 row or empty)
-            ret[["geneID"]]  <- geneIDs            
+            ret[["geneID"]]  <- geneIDs
         }
         
+        if(length(ret)==0) ret<-NULL
         return (ret)
     })
     
@@ -344,7 +345,7 @@ setClass(Class="GenesRanking",
         geneList <- as.vector(na.omit(as.vector(genes)))
         if(any(!geneList %in% rownames(object@postProb))) stop("The requested genes are not in the genesRanking.")
         
-        newPostProb <- object@postProb[geneList, ]
+        newPostProb <- object@postProb[geneList, , drop=FALSE]
         #if(!is.vector(geneList)) genesOrder <- calculateOrder(newPostProb, untie="bestPostProb")        # WARNING: The gene class is not known. It may differ, if it was initially assigned to a class with low post prob.
         newOrd    <- matrix(ncol=ncol(genes), nrow=nrow(genes))
         colnames(newOrd) <- colnames(genes)
