@@ -259,14 +259,14 @@ minimumDiff <- function (genesDiff, genesClass, eset, sampleLabels)
 difMean <- function(eset, sampleLabels)
 {
   classes <- levels(sampleLabels)
-  if(length(classes)==2) classes <- classes[1]
+  if(length(classes)==2) classes <- classes[2]   # First class is refference
   dif <- sapply(classes, function(cl)
   {
       samplesClass <- sampleLabels %in% cl
       apply(eset[,samplesClass],1,mean) - apply(eset[,-samplesClass],1, mean)
   })
   # if two classes:
-  if(ncol(dif)==1) colnames(dif) <- "BothClasses"
+  #if(ncol(dif)==1) colnames(dif) <- "BothClasses"
   return(dif)
 }
 

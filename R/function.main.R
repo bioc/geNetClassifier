@@ -161,6 +161,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     # Filter data, calculate Posterior Probabilities and rank genes
     if (verbose){ message(paste(format(Sys.time(), "%H:%M:%S"),"- Filtering data and calculating the genes ranking...")); flush.console()}
     esetFiltered <- eset[iqr.filter(eset,IQRfilterPercentage),]
+    rm(eset)
     if(dim(esetFiltered)[1]< numClasses) stop(paste("Applying a filter percentage of ",IQRfilterPercentage," there are not enough genes left to perform the classiffication. Try with a lower filter percentage.",sep=""))
     if(!is.null(geneLabels)) geneLabels <- extractGeneLabels(geneLabels, rownames(esetFiltered))
 
@@ -175,7 +176,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     
     
     # Check whether the genesRanking provided matches the filtered eset
-    if(!is.null(genesRankingGlobal) && (sum(!rownames(genesRankingGlobal@postProb) %in% rownames(eset)) > 0))     # There are genes in the genesRanking which arent in the eset -> Recalculate
+    if(!is.null(genesRankingGlobal) && (sum(!rownames(genesRankingGlobal@postProb) %in% rownames(esetFiltered)) > 0))     # There are genes in the genesRanking which arent in the eset -> Recalculate
     {
         genesRankingGlobal <- NULL
         warning("The genesRanking given as argument doesn't match the dataset. Recaculculating the genesRanking...", immediate. = TRUE)
@@ -207,6 +208,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     topGenes <- as.vector(getRanking(getTopRanking(genesRankingGlobal, lpMaxGenes), showGeneID=TRUE, showGeneLabels=FALSE)$geneID)
     topGenes <- topGenes[which(!is.na(topGenes))]
     meanExprDiff <- difMean(esetFiltered[topGenes,], sampleLabels)
+    if(numClasses==2) message(paste("Expression difference calculated for ", colnames(meanExprDiff), " (Reference/control: ", levels(sampleLabels)[1],")", sep=""))
     genesRankingGlobal <- setProperties(genesRankingGlobal, meanDif=meanExprDiff)
     
     # Calculate genes with Correlations & Interactions
@@ -829,7 +831,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     if(!is.null(plotsName))
     {        
         plotGeNetClassifierReturn(geNetClassifierReturn, fileName=plotsName, lpThreshold=lpThreshold, numGenesLpPlot=numBestGenes, numGenesNetworkPlot=numGenesNetworkPlot, geneLabels=geneLabels, verbose=FALSE)
-        if(!is.null(classificationGenesRanking)) plotExpressionProfiles(eset, classificationGenesRanking, fileName=paste(plotsName,"_expressionProfiles.pdf",sep=""), sampleLabels=sampleLabels, showMean=TRUE, labelsOrder=labelsOrder,verbose=FALSE, type=c("lines","boxplot"))
+        if(!is.null(classificationGenesRanking)) plotExpressionProfiles(esetFiltered, classificationGenesRanking, fileName=paste(plotsName,"_expressionProfiles.pdf",sep=""), sampleLabels=sampleLabels, showMean=TRUE, labelsOrder=labelsOrder,verbose=FALSE, type=c("lines","boxplot"))
         plotCVgE <- FALSE
         if(buildClassifier || (estimateGError && plotCVgE)) plotErrorNumGenes(numGenesTPglobal, numGenesClass, numTrainGenes, numGenesClassGE, paste(plotsName,"_errorNumGenes.pdf",sep=""), plotCVgE=plotCVgE) 
         if(estimateGError)

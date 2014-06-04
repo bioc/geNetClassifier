@@ -598,6 +598,7 @@ plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=N
     
     # eset
     exprMatrix <- eset
+    rm(eset)
     if(is(exprMatrix, "ExpressionSet")) exprMatrix <- exprs(exprMatrix) else if (!is.matrix(exprMatrix)) stop("The first argument should be an expression matrix or an ExpressionSet.")
     
     # Other
