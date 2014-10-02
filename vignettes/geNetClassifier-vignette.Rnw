@@ -64,8 +64,6 @@ The algorithm shows a robust performance applied to patient-based gene expressio
 
 The method is designed to be applied to the analysis and classification of different disease subtypes. Therefore in the R package and this vignette all the explanations and examples are disease-oriented. However, \textit{geNetClassifier} can be applied to the classification of any other type of biological states, pathological or not.\\
 
-In the same way, although the examples in this vignette are based on gene expression microarrays, many other types of data could be used as input. Current biomedical literature is full of genome-wide studies of different human disease samples using expression microarrays or other platforms (like RNA-seq). Any of these types of studies can be used as input for \textit{geNetClassifier()}.\\
-
 \textbf{Methods}\\
 
 The algorithm \textit{geNetClassifier()} integrates several existing machine learning and statistical methods. The \textit{feature ranking} is achieved based on a Parametric Empirical Bayes method (PEB). Double-nested internal cross-validation (CV) \cite{barrier} is used for the \textit{feature selection} process and to estimate the \textit{generalization error} of the classifier. The machine learning method implemented in the classifier is a multi-class Support Vector Machine (SVM) \cite{meyer}. The gene \textit{networks} are built calculating the relations derived from gene to gene co-expression analysis (using \textit{Pearson correlation}) and the interactions derived from gene mutual information analysis (using \textit{minet} package) \cite{minet}. More details about these methods are available in the appropriate sections.\\
@@ -194,7 +192,7 @@ summary(leukemiasEset$LeukemiaType[trainSamples])
 \label{sec:run}
 As indicated, to run the algorithm \textit{geNetClassifier} there is a main R function called with the same name: \textit{geNetClassifier()}. The essential input elements that this function needs are:
 \begin{quote}
-1.- An \textit{expressionSet}: R object defined in Bioconductor that contains a genome-wide expression matrix with data for multiple samples; see \textit{?ExpressionSet}.
+1.- An \textit{expressionSet}: R object defined in Bioconductor that contains a genome-wide expression matrix with data for multiple samples; see \textit{?ExpressionSet}. Note that since the ranking is built though package \emph{EBarrays}, the data in the expression set should be normalized intensity values (positive and on raw scale, not on a logarithmic scale).
 
 2.- The \textit{sampleLabels}: a vector with the class name of each sample or the \textit{ExpressionSet phenoData} object containing this information.
 \end{quote}

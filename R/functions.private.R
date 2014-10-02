@@ -114,8 +114,9 @@ PEB <- function(eset, sampleLabels, labelsOrder=NULL,  nullHiphothesisFilter=0.9
 
     postProb <- gene.select(eset, hypothesis)
     colnames(postProb) <- names(hypothesis)
-    postProb <- postProb[postProb[,"Null Hipothesis"] < nullHiphothesisFilter,]
+    postProb <- postProb[postProb[,"Null Hipothesis"] < nullHiphothesisFilter,, drop=FALSE]
     if(dim(postProb)[1] == 0) stop("The current genes don't differentiate the classes.")
+    # Si hay un solo gen y 1 sola clase puede dar error...
     
     if(!is.null(labelsOrder))  postProb <-postProb[,c("Null Hipothesis", labelsOrder)]
     
@@ -152,13 +153,16 @@ calculateOrder <- function (eset, sampleLabels, postProb,untie)        #untie="b
     {
         for ( cl in names(empates))
         {
-            meanDiffs <- lapply( empates[[cl]], function(x) { minimumDiff (rownames(ranking)[which(ranking[,cl] == x)], cl, eset, sampleLabels)})
-            names(meanDiffs)  <- empates[[cl]]
-            
-            meanDiffRanks <- lapply(meanDiffs, function(x) {rank(-x)-1}) # rank(-meanDiff)-1
-            for(rnk in names(meanDiffRanks))
+            if(length(empates[[cl]])>0)
             {
-                ranking[names(meanDiffRanks[[rnk]]),cl] <- as.numeric(rnk) + meanDiffRanks[[rnk]]
+                meanDiffs <- lapply( empates[[cl]], function(x) { minimumDiff (rownames(ranking)[which(ranking[,cl] == x)], cl, eset, sampleLabels)})
+                names(meanDiffs)  <- empates[[cl]]
+                
+                meanDiffRanks <- lapply(meanDiffs, function(x) {rank(-x)-1}) # rank(-meanDiff)-1
+                for(rnk in names(meanDiffRanks))
+                {
+                    ranking[names(meanDiffRanks[[rnk]]),cl, drop=FALSE] <- as.numeric(rnk) + meanDiffRanks[[rnk]]
+                }
             }
         }    
     }

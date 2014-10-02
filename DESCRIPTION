@@ -3,7 +3,7 @@ Type: Package
 Title: classify diseases and build associated gene networks using gene
         expression profiles
 Version: 1.5.3
-Date: 2014-05-30
+Date: 2014-09-30
 Author: Sara Aibar, Celia Fontanillo and Javier De Las Rivas.
         Bioinformatics and Functional Genomics Group. Cancer Research
         Center (CiC-IBMCC, CSIC/USAL). Salamanca. Spain.
@@ -15,7 +15,7 @@ Enhances: RColorBrewer, igraph, infotheo
 Description: Comprehensive package to automatically train and validate a multi-class SVM classifier based on gene expression data. Provides transparent selection of gene markers, their coexpression networks, and an interface to query the classifier.
 License: GPL (>= 2)
 ZipData: no
-URL: http://bioinfow.dep.usal.es/
+URL: http://www.cicancer.org
 LazyLoad: yes
 Collate: class.GenesRanking.R class.GenesNetwork.R
         class.GeneralizationError.R class.GeNetClassifierReturn.R

@@ -468,6 +468,9 @@ calculateGenesRanking <- function(eset=NULL, sampleLabels=NULL, numGenesPlot=100
     {
         # Check eset
         if(is(eset, "ExpressionSet")) eset <- exprs(eset) else if (!is.matrix(eset)) stop("The argument 'eset' should be an expression matrix or an ExpressionSet.")
+        if(any(is.na(eset))) warning("The expression set contains NAs.")
+        if(any(eset<0, na.rm=TRUE)) warning("Genes with negative values will not be considered.")
+        
         # Check sampleLabels
         if(class(sampleLabels) != "factor") { warning("The argument 'sampleLabels' had to be converted into a factor.", immediate. = TRUE)}    
         sampleLabels <- factor (sampleLabels) #Just in case there aren't samples of all the original labels    

@@ -24,7 +24,7 @@ returnAllGenesRanking = TRUE, verbose = TRUE)
 }
 \arguments{
  \item{eset}{
-ExpressionSet or matrix. Gene expression of the train samples.
+ExpressionSet or matrix. Gene expression of the train samples (positive & non-logaritmic normalized values).
 }
   \item{sampleLabels}{
 Character. PhenoData variable (column name) containing the train samples class labels. \cr

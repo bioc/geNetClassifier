@@ -18,7 +18,7 @@ verbose=TRUE)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{eset}{
-ExpressionSet or Matrix. Gene expression of the train samples.
+ExpressionSet or Matrix. Gene expression of the train samples (positive & non-logaritmic normalized values).
 }
   \item{sampleLabels}{
 Character. PhenoData variable (column name) containing the train samples class labels. \cr

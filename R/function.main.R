@@ -41,6 +41,8 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     # Eset should be a matrix. If it is a whole ExpressionSet, we extract the expressions matrix with exprs()
     if(is(eset, "ExpressionSet")) eset <- exprs(eset) else if (!is.matrix(eset)) stop("The first argument should be an expression matrix or an ExpressionSet.")
     if(length(unique(rownames(eset))) > length(rownames(eset))) stop("The row names of the expression matrix (gene ID) should be unique.")
+    if(any(is.na(eset))) warning("The expression set contains NAs.")
+    if(any(eset<0, na.rm=TRUE)) warning("Genes with negative values will not be considered.")
     
     # Check wether the eset and the sampleLabels match
     numSamples <- ncol(eset)
