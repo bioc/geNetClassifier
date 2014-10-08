@@ -893,6 +893,10 @@ plotType="pdf", fileName="leukemiasNetwork")
   \label{fig:plotNtwAML100g}
 \end{figure}
 
+\newpage
+\section*{Acknowledgements}
+This work was supported by Instituto de Salud Carlos III and by a grant from the Junta de Castilla y Leon and the European Social Fund to S.A and C.D.
+
 \begin{thebibliography}{8}  % 100 is a random guess of the total number of references
 
 \bibitem{mile} Haferlach T, Kohlmann A, Wieczorek L, Basso G, Kronnie GT, Bene MC, De Vos J, Hernandez JM, Hofmann WK, Mills KI, Gilkes A, Chiaretti S, Shurtleff SA, Kipps TJ, Rassenti LZ, Yeoh AE, Papenhausen PR, Liu WM, Williams PM, Foa R (2010). \emph{Clinical utility of microarray-based gene expression profiling in the diagnosis and subclassification of leukemia: report from the International Microarray Innovations in Leukemia Study Group}. J Clin Oncol. 28: 2529-2537.
