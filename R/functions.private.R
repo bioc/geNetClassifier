@@ -151,7 +151,7 @@ calculateOrder <- function (eset, sampleLabels, postProb,untie)        #untie="b
     
     if(!is.null(names(empates)))
     {
-        for ( cl in names(empates))
+        for (cl in names(empates))
         {
             if(length(empates[[cl]])>0)
             {
@@ -161,7 +161,7 @@ calculateOrder <- function (eset, sampleLabels, postProb,untie)        #untie="b
                 meanDiffRanks <- lapply(meanDiffs, function(x) {rank(-x)-1}) # rank(-meanDiff)-1
                 for(rnk in names(meanDiffRanks))
                 {
-                    ranking[names(meanDiffRanks[[rnk]]),cl, drop=FALSE] <- as.numeric(rnk) + meanDiffRanks[[rnk]]
+                    ranking[names(meanDiffRanks[[rnk]]),cl] <- as.numeric(rnk) + meanDiffRanks[[rnk]]   # (without drop=FALSE)
                 }
             }
         }    
