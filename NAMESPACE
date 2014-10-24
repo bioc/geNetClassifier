@@ -29,7 +29,7 @@ exportMethods(initialize, show, overview, names)
 
 import(Biobase)
 import(methods)
-import(minet)
+importFrom(minet, minet)
 importFrom(e1071, svm)
 importFrom(graphics, plot)
 importFrom(EBarrays,ebPatterns)

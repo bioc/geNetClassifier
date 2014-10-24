@@ -408,28 +408,49 @@ interaction.net <- function(eset, genes, lp, method="clr", estimator="mi.empiric
 
 ## Devuelve la red de correlaciones de los genes pasados como parametro
 correlation.net <- function(eset, genes, lp, method="pearson", threshold=0.8)
-##(correlation.net(esetFiltered, rankENSG[1:lp[i],i], lp[i], method="pearson", threshold=correlationsThreshold)
 {
     net <- cbind(gene1=NULL, class1=character(0), gene2=NULL, class2=character(0), relation=character(0), value=numeric(0))
     
-    #Comprobacion de parametros
-    if(is(eset, "ExpressionSet")) eset <- exprs(eset) else if (!is.matrix(eset)) {stop("The first argument should be an expression matrix.", immediate. = TRUE)
-                                return(net)    }
+    # Check arguments (Choose warning+ret  // stop)
+    if(is(eset, "ExpressionSet")) 
+    {
+        eset <- exprs(eset) 
+    }else
+    {
+        if (!is.matrix(eset)) 
+        {
+            stop("The first argument should be an expression matrix.", immediate. = TRUE)
+            return(net)    
+        }
+    }
     if(is.vector(genes)) genes <- as.matrix(genes)
-    if(!is.matrix(genes) )         {stop("The argument 'genes' should be a matrix or a vector.", immediate. = TRUE)
-                                return(net)    }
-        if(dim(genes)[1]>dim(eset)[1] || sum(which(dim(genes)==0))) {warning("The argument 'genes' can't be neither empty nor have more genes than the available.") 
-                                                return(net)}
-    if(!is.numeric(lp))         {stop("The argument 'lp' should be numeric.", immediate. = TRUE)
-                                return(net)    }
-        if (sum(lp!=0)==0) return(net)
-        if(dim(genes)[2]!=length(lp)){stop("The dimensions of the given genes and lp don't match.", immediate. = TRUE)
-                                return(net)    }
-        if(sum(lp>dim(genes)[1])>0) {warning("The number of genes in lp is bigger than the available genes.", immediate. = TRUE)
-                                lp[1:length(lp)]<-dim(genes)[1] 
-                                }
+    if(!is.matrix(genes))         
+    {
+        stop("The argument 'genes' should be a matrix or a vector.", immediate. = TRUE)
+        return(net)    
+    }
+    if(dim(genes)[1]>dim(eset)[1] || sum(which(dim(genes)==0)))
+    {   warning("The argument 'genes' can't be neither empty nor have more genes than the available.") 
+        return(net)
+    }
+    if(!is.numeric(lp)) 
+    {
+        stop("The argument 'lp' should be numeric.", immediate. = TRUE)
+        return(net)    
+    }
+    if (sum(lp!=0)==0) return(net)
+    if(dim(genes)[2]!=length(lp))
+    {
+        stop("The dimensions of the given genes and lp don't match.", immediate. = TRUE)
+        return(net)   
+    }
+    if(sum(lp>dim(genes)[1])>0)
+    {
+        warning("The number of genes in lp is bigger than the available genes.", immediate. = TRUE)
+        lp[1:length(lp)] <- dim(genes)[1] 
+    }
     
-    #Calculo de la correlacion
+    # Calculo de la correlacion
     ensg<-c()
     classes <- c()
     for(i in 1:length(lp)){

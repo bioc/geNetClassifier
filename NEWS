@@ -1,3 +1,8 @@
+CHANGES IN VERSION 1.6.1
+----------------------
+    o Vignette update
+    o Added Spearman and Kendall correlations (argument correlationMethod)
+
 CHANGES IN VERSION 1.6
 ----------------------
 NEW FEATURES

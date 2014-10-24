@@ -16,6 +16,7 @@ numGenesNetworkPlot = 100,
 minGenesTrain = 1, maxGenesTrain = 100, continueZeroError = FALSE,
 numIters = 6, lpThreshold = 0.95, numDecimals = 3,
 removeCorrelations = FALSE, correlationsThreshold = 0.8, 
+correlationMethod = "pearson",
 removeInteractions = FALSE, interactionsThreshold = 0.5, 
 minProbAssignCoeff = 1, minDiffAssignCoeff = 0.8, 
 IQRfilterPercentage = 0, skipInteractions = TRUE, 
@@ -71,6 +72,9 @@ Logical. If TRUE, no correlated genes will be chosen to train the classifier.
 }
   \item{correlationsThreshold}{
 Numeric between 0 and 1. Minimum Pearson's correlation coefficient to consider genes correlated.
+}
+  \item{correlationMethod}{
+"pearson", "kendall" or "spearman". Type of correlation to calculate between genes.
 }
   \item{removeInteractions}{
 Logical. If TRUE, genes with Mutual Information coefficient over the threshold will not be chosen to train the classifier.

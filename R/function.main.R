@@ -3,7 +3,7 @@
 #performanceEstimation
 #network...
 
-geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=TRUE, estimateGError=FALSE, calculateNetwork=TRUE,   labelsOrder=NULL, geneLabels=NULL, numGenesNetworkPlot = 100, minGenesTrain=1, maxGenesTrain  = 100, continueZeroError=FALSE, numIters = 6, lpThreshold = 0.95, numDecimals=3, removeCorrelations=FALSE, correlationsThreshold=0.8, removeInteractions=FALSE, interactionsThreshold=0.5, minProbAssignCoeff=1, minDiffAssignCoeff=0.8,    IQRfilterPercentage = 0, skipInteractions=TRUE,    precalcGenesNetwork = NULL, precalcGenesRanking=NULL, returnAllGenesRanking=TRUE, verbose=TRUE)
+geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=TRUE, estimateGError=FALSE, calculateNetwork=TRUE,   labelsOrder=NULL, geneLabels=NULL, numGenesNetworkPlot = 100, minGenesTrain=1, maxGenesTrain  = 100, continueZeroError=FALSE, numIters = 6, lpThreshold = 0.95, numDecimals=3, removeCorrelations=FALSE, correlationsThreshold=0.8, correlationMethod="pearson", removeInteractions=FALSE, interactionsThreshold=0.5, minProbAssignCoeff=1, minDiffAssignCoeff=0.8,    IQRfilterPercentage = 0, skipInteractions=TRUE,    precalcGenesNetwork = NULL, precalcGenesRanking=NULL, returnAllGenesRanking=TRUE, verbose=TRUE)
 # numDecimals=3 (solo necesario en GE)
 # Precalculated genesNetwork / genesRanking -> Use at your own risk!
 {    
@@ -224,7 +224,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
             if(lpMaxGenes[cl] > 0)    
             {
                nodes <- rankENSG[1:lpMaxGenes[cl],cl]
-               edges <- correlation.net(esetFiltered, nodes, lpMaxGenes[cl], method="pearson", threshold=correlationsThreshold)
+               edges <- correlation.net(esetFiltered, nodes, lpMaxGenes[cl], method=correlationMethod, threshold=correlationsThreshold)
                genesNetwork <- c(genesNetwork, genesNetwork=list(new("GenesNetwork", nodes = nodes,edges = edges)))
             }else {genesNetwork <- c(genesNetwork, genesNetwork=list(NULL))}
             names(genesNetwork)[length(genesNetwork)] <- cl
