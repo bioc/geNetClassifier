@@ -793,7 +793,7 @@ The \textit{discriminant power} is a parameter derived from the classifier's \te
 
 The multi-class SVM algorithm (One-versus-One, OvO) produces a set of \textit{support vectors} for each binary comparison between classes. Such \textit{support vectors} include the \textit{Lagrange coefficients} (alpha) for all the genes selected for the classification. Therefore, we can assign to each gene the combination of the \textit{Lagrange coefficients} for all the \textit{support vectors}. The addition of these coefficients in each class are calculated and represented as piled up bars in a plot. The \textit{discriminant power} is then calculated as the difference between the largest value and the closest (the distance marked by two red lines in the plot). In conclusion, the \textit{discriminant power} is a parameter that allows the characterization of the genes based in their capacity to separate different classes (i.e. different diseases or diseases subtypes compared).\\ 
 
-The \textit{discriminant power} is calculated of each gene included in the classifier (the \textit{@classificationGenes}) when building the classifier (\textit{geNetClassifier()}). The \textit{plotDiscriminantPower()} function is included in the package to generate a graphic representation of the \textit{discriminant power}. 
+The \textit{discriminant power} is calculated for each gene included in the classifier (the \textit{@classificationGenes}) when it is built \textit{geNetClassifier()}). The \textit{plotDiscriminantPower()} function is included in the package to generate a graphic representation of the \textit{discriminant power}. 
 
 <<fig=FALSE, echo=TRUE, height=5>>=
 plotDiscriminantPower(leukemiasClassifier, 
