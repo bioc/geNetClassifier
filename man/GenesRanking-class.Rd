@@ -69,7 +69,7 @@ genesRanking <- leukemiasClassifier@genesRanking
 # Number of available genes in the ranking:
 numGenes(genesRanking)
 # Number of significant genes (genes with posterior probability over the threshold. 
-# Default: lpThreshold=0.75):
+# Default: lpThreshold=0.95):
 numSignificantGenes(genesRanking)
 # Top 10 genes of CML:
 genesDetails(genesRanking)$CML[1:10,]

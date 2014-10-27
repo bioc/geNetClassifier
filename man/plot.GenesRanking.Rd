@@ -11,7 +11,7 @@ Plots the posterior probability of the genes ordered by class ranking.
 }
 \usage{
 \method{plot}{GenesRanking}(x, y="missing", numGenesPlot=1000, 
-    plotTitle="Significant genes", lpThreshold = 0.75, ...)
+    plotTitle="Significant genes", lpThreshold = 0.95, ...)
 }
 \arguments{
   \item{x}{GenesRanking.

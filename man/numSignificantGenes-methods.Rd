@@ -9,11 +9,11 @@
 Provides the number of ranked genes over the posterior probability threshold
 }
 % \usage{
-% \method{numSignificantGenes}{GenesRanking}(object, lpThreshold=0.75, numSignificantGenesType="ranked")
+% \method{numSignificantGenes}{GenesRanking}(object, lpThreshold=0.95, numSignificantGenesType="ranked")
 % }
 \section{Methods}{
 \describe{
-\code{numSignificantGenes(object, lpThreshold=0.75, numSignificantGenesType="ranked") 
+\code{numSignificantGenes(object, lpThreshold=0.95, numSignificantGenesType="ranked") 
 }
 }}
 \arguments{
@@ -33,7 +33,7 @@ data(leukemiasClassifier)
 # Total number of genes in the ranking:
 numGenes(leukemiasClassifier@genesRanking)
 # Number of genes ovher the posterior probability threshold
-# Default:  lpThreshold=0.75, numSignificantGenesType="ranked"
+# Default:  lpThreshold=0.95, numSignificantGenesType="ranked"
 numSignificantGenes(leukemiasClassifier@genesRanking)
 numSignificantGenes(leukemiasClassifier@genesRanking, numSignificantGenesType="global")
 numSignificantGenes(leukemiasClassifier@genesRanking, lpThreshold=0.90)
