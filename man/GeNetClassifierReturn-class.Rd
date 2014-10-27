@@ -118,7 +118,7 @@ leukemiasClassifier@genesRanking
 	# Number of available genes in the ranking:
 	numGenes(leukemiasClassifier@genesRanking)
 	# Number of significant genes 
-	# (genes with posterior probability over lpThreshold, default=0.75)
+	# (genes with posterior probability over lpThreshold, default=0.95)
 	numSignificantGenes(leukemiasClassifier@genesRanking)		
 	# Top 10 genes of CML:
 	genesDetails(leukemiasClassifier@genesRanking)$CML[1:10,]

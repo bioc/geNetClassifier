@@ -132,7 +132,7 @@ setClass(Class="GenesRanking",
             print(getRanking(object, showGeneLabels=TRUE)[[1]][1:nRows,,drop=FALSE])        # By default shows the geneName if available
 
             if(nrow(object@ord)>100){
-                cat("...\n\nNumber of ranked significant genes (posterior probability over threshold):\n\t",colnames(object@ord),"\n\t",numSignificantGenes(object, lpThreshold=0.75),sep=" ")
+                cat("...\n\nNumber of ranked significant genes (posterior probability over threshold):\n\t",colnames(object@ord),"\n\t",numSignificantGenes(object, lpThreshold=0.95),sep=" ")
                 cat("\nTo see the whole ranking (",nrow(object@ord)," rows) use: getRanking(...)",sep="")
             }
             cat("\nDetails of the top X ranked genes of each class: genesDetails(..., nGenes=X)\n")
@@ -140,7 +140,7 @@ setClass(Class="GenesRanking",
         }else print("The genes ranking contains no genes.")
     })
     
-    plot.GenesRanking <- function(x, y="missing", numGenesPlot=1000, plotTitle="Significant genes", lpThreshold = 0.75, ...)
+    plot.GenesRanking <- function(x, y="missing", numGenesPlot=1000, plotTitle="Significant genes", lpThreshold = 0.95, ...)
     { 
         calculateGenesRanking(precalcGenesRanking=x, numGenesPlot=numGenesPlot, plotTitle=plotTitle, lpThreshold = lpThreshold)
     }
@@ -249,8 +249,8 @@ setClass(Class="GenesRanking",
     # Returns the number of ranked genes over the threshold (not exactly the same as the lp returned by the main classifier)
     # lp from classifier: number of genes per class over the threshold
     # numSignificantGenes: Number of RANKED genes per class over the threshold (some classes with many genes over the threshold migth have "given" some genes to classes with really few genes
-    if(!exists("numSignificantGenes")) setGeneric(name="numSignificantGenes", def=function(object, lpThreshold=0.75, numSignificantGenesType="ranked") standardGeneric("numSignificantGenes"))
-    setMethod(f="numSignificantGenes", signature="GenesRanking", definition=function(object, lpThreshold=0.75, numSignificantGenesType="ranked") 
+    if(!exists("numSignificantGenes")) setGeneric(name="numSignificantGenes", def=function(object, lpThreshold=0.95, numSignificantGenesType="ranked") standardGeneric("numSignificantGenes"))
+    setMethod(f="numSignificantGenes", signature="GenesRanking", definition=function(object, lpThreshold=0.95, numSignificantGenesType="ranked") 
     {
         if(class(object)!="GenesRanking") stop("The first argument should be a 'GenesRanking' object.")
         if(!is.numeric(lpThreshold) || (lpThreshold>=1 || lpThreshold <0)) stop("Lp threshold should be a probability (a number between 0 and 1).")
