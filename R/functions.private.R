@@ -105,7 +105,7 @@ iqr.filter <- function(eset, percentage = 0.50)
 ## el numero de elementos de cada clase y un booleano indicando si se van a devolver solo los genes sobreexpresados (TRUE) o tanto los genes soberexpresados como reprimidos (FALSE)
 
 # En nuestro programa la opcion onlyOverExpressed no se utiliza
-PEB <- function(eset, sampleLabels, labelsOrder=NULL,  nullHiphothesisFilter=0.95, untie= "bestRank")
+PEB <- function(eset, sampleLabels, labelsOrder=NULL,  nullHiphothesisFilter=0.95, untie="bestRank")
 {
     hypothesis     <- create.hypothesis (sampleLabels)
 

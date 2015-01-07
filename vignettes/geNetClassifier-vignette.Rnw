@@ -311,6 +311,8 @@ A first version of the ranking is built by ordering the genes decreasingly by th
 
 The final version of the ranking is built assigning each gene to the class in which it has the best ranking. In this way the separation between classes is optimized, and the method will choose first the genes that best differentiate any of the classes. As a result of this process, even if a gene is found associated to several classes during the expression analysis, \textbf{each gene can only be on the ranking of one class}.\\ 
 
+Note that in case of an analysis performed for only \textbf{two classes} (i.e. a control vs case study, or a comparison between two diseases), the \emph{one vs rest} approach only provides one list of genes. This list of genes, the genes that differentiate the classes, is labeled \emph{BothClasses}. The sign of the expression value reflects in which class it is up or down. \textit{geNetClassifier} will use the first label as reference and print a message when executed: i.e. \emph{Expression difference calculated for AML (Reference/control: ALL)}. In this way, a positive value means the mean expression value is higher in the second class (AML). 
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.6\textwidth]{Fig3overlap}
