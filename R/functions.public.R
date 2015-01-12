@@ -708,6 +708,13 @@ plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=N
     }
     if(is.null(labelsOrder) && !is.null(sampleLabels)) labelsOrder <- levels(sampleLabels)
     
+    if(any(nchar(classes)>10)) 
+    {
+        classLabels <- setNames(paste("C", sapply(classes,function(x) which(classes==x)), sep=""), classes)
+        warning(paste("Some class names are longer than 10 characters. The following labels will be used in plots:\n",paste(classLabels, names(classLabels), sep=": ", collapse="\n"), sep=""))
+    }
+        
+    
     #########################
     # Plot
     #########################    
@@ -737,7 +744,9 @@ plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=N
         # Class
         if(!is.null(colnames(genes))) 
         {  
+            # Gene class, from genes table
             geneTitles[g,"class"] <- unique(colnames(genes)[which(genes == g,arr.ind=TRUE)[,2]])
+            if(nchar(geneTitles[g,"class"])>10) geneTitles[g,"class"] <- paste(geneTitles[g,"class"], " (C",which(classes==geneTitles[g,"class"]), ")", sep="")
         } else    
         {    
             geneTitles[g,"class"]<-"" 
@@ -794,7 +803,7 @@ plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=N
                         if (is.na((sampleLabels[j] != sampleLabels[j+1]) ) || sampleLabels[j] != sampleLabels[j+1]) 
                         {
                             if(!is.na((sampleLabels[j] != sampleLabels[j+1]) ) ) abline(v=j+0.5, col="black") # Separate classes
-                            if (any(nchar(classes)>10) ) {text(prevLim+((j-prevLim)/2), ylim[2]-(ylim[2]*0.04), labels=paste("C",which(classes==sampleLabels[j]),sep="")) # Class title
+                            if (any(nchar(classes)>10) ) {text(prevLim+((j-prevLim)/2), ylim[2]-(ylim[2]*0.04), labels=classLabels[sampleLabels[j]]) # Class title
                             }else  text(prevLim+((j-prevLim)/2)+0.5, y=ylim[2]-(ylim[2]*0.04), labels=paste(sampleLabels[j],sep=""), pos=3) # Class title
                             if(showMean)
                             {
@@ -813,9 +822,18 @@ plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=N
         if(!is.null(sampleLabels))
         {
             esetXclases <- lapply(split(names(sampleLabels), sampleLabels), function(x) matriz[genesVector,x, drop=FALSE])[labelsOrder]
+            if(any(nchar(names(esetXclases))>10)) 
+            {
+                print(names(esetXclases))
+                
+                names(esetXclases) <- classLabels[names(esetXclases)] #paste("C", sapply(names(esetXclases),function(x) which(classes==x)), sep="")
+                print(names(esetXclases))
+                labelsOrder <- names(esetXclases)
+            }
+            
             for(gen in genesVector)
             {
-                esetExprSamples <- lapply(esetXclases, function(x) x[gen,, drop=FALSE])[labelsOrder]
+                esetExprSamples <- lapply(esetXclases, function(x) x[gen,, drop=FALSE])         
                 esetExprSamplesMelted <- data.frame(Expression = unlist(esetExprSamples), sampleLabel = rep(names(esetExprSamples), lapply(esetExprSamples, length)))
                 esetExprSamplesMelted$sampleLabel <- factor(esetExprSamplesMelted$sampleLabel, levels=labelsOrder)
                 boxplot(Expression~sampleLabel, esetExprSamplesMelted, ylim=ylim, ylab="Expression values", col=classColors, las=2, outpch=16, outcex=0.5)

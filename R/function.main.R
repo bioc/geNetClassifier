@@ -97,7 +97,6 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     if(!is.logical(estimateGError))  stop("The argument estimateGError should be either TRUE or FALSE.")
     if(!is.logical(calculateNetwork))  stop("The argument calculateNetwork should be either TRUE or FALSE.")
     if(!is.logical(returnTopGenesNetwork)) returnTopGenesNetwork <- FALSE
-    if(skipInteractions && calculateNetwork) if(verbose) message("The network will be calculated, but without interactions")
     if((removeInteractions || removeCorrelations) && (!calculateNetwork && is.null(genesNetwork))) 
     {
         warning("In order to remove correlations or interactions, the genes network needs to be calculated.")
@@ -148,8 +147,8 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     #################################################
     
     # Check if there are the same number of samples for all the classes
-    sameNumSamplesClass <- length(table(numElemClass))==0
-     if (!sameNumSamplesClass) warning("It is recommended to have the *same* number of samples in each class in order to obtain balanced external validation stats.")  
+    sameNumSamplesClass <- length(table(numElemClass))==1
+    if (!sameNumSamplesClass) warning("It is recommended to have the *same* number of samples in each class in order to obtain balanced external validation stats.")  
     if(estimateGError && sameNumSamplesClass) if((unique(numElemClass)%%5)!=0) warning("Since the number of samples is not multiple of 5, some samples might be used as test in several cross-validation loops when estimating the generalization error of the classifier.")
     
     
@@ -165,8 +164,10 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     esetFiltered <- eset[iqr.filter(eset,IQRfilterPercentage),]
     rm(eset)
     if(dim(esetFiltered)[1]< numClasses) stop(paste("Applying a filter percentage of ",IQRfilterPercentage," there are not enough genes left to perform the classiffication. Try with a lower filter percentage.",sep=""))
+    if(IQRfilterPercentage>0) message(paste("Gene expression matrix filtered to remove ",(IQRfilterPercentage*100),"% of the genes (IQR filter). Number of genes left: ",dim(esetFiltered)[1],sep=""))
     if(!is.null(geneLabels)) geneLabels <- extractGeneLabels(geneLabels, rownames(esetFiltered))
 
+    
     # Make sure the columns in filtered eset are ordered by sample type
     indexes<-NULL
     for(i in 1:numClasses) 
@@ -210,7 +211,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     topGenes <- as.vector(getRanking(getTopRanking(genesRankingGlobal, lpMaxGenes), showGeneID=TRUE, showGeneLabels=FALSE)$geneID)
     topGenes <- topGenes[which(!is.na(topGenes))]
     meanExprDiff <- difMean(esetFiltered[topGenes,], sampleLabels)
-    if(numClasses==2) print(paste("Expression difference calculated for ", colnames(meanExprDiff), " (Reference/control: ", levels(sampleLabels)[1],")", sep=""))
+    if(numClasses==2) twoClassesMessage <- paste("\nNOTE: Since there are only two classes, the expression difference was calculated for ", colnames(meanExprDiff), " (", levels(sampleLabels)[1]," was used as reference/control)", sep="")
     genesRankingGlobal <- setProperties(genesRankingGlobal, meanDif=meanExprDiff)
     
     # Calculate genes with Correlations & Interactions
@@ -239,6 +240,9 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
                 if(lpMaxGenes[cl] >0)   genesNetwork[[cl]]@edges <- rbind(genesNetwork[[cl]]@edges, interaction.net(esetFiltered, rankENSG[1:lpMaxGenes[cl],cl], lpMaxGenes[cl], method="clr", estimator="mi.empirical", threshold=interactionsThreshold))
             }
         }
+        
+        if(skipInteractions && calculateNetwork) if(verbose) message("Network calculated without interactions")
+        if(verbose) message(paste("Gene associations (network) calculated between genes with posterior probability over ",lpThreshold,sep=""))        # ," (top ",100-(lpThreshold*100),"% of the genes ranking)"
     }
 
     # If they have to be removed...
@@ -450,7 +454,6 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
                                 genes <- c(genes, genesRedundancy$nonRedundantGenes[[cl]] [1:numGenes2addNonZero[cl]])
                             }
                         } 
-
                         # Train the classifier
                         geneSelectClassifier <- linear.SVM(esetFiltered[genes, trainSamples, drop=FALSE], sampleLabels[trainSamples], cvInternSamples, minProbAssignCoeff=minProbAssignCoeff, minDiffAssignCoeff=minDiffAssignCoeff) # V4: Usando NA tb internamente
                         # Take note of its accuracy
@@ -714,19 +717,38 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     if(buildClassifier && verbose)
     {
         # Print basic results
-        message(paste(format(Sys.time(), "%H:%M:%S"),"Classifier built for the following classes:"))
-        for (i in 1:numClasses) message(paste("\tC",i,": ",classes[i],sep=""))
-        message(paste("Total number of genes included in the classifier: ",sum(numTrainGenes[numCV.total,]),". Number per class: ",sep=""));
-        print(numTrainGenes[numCV.total,])            
-        message(paste("\nClassifier trained with ",numSamples," samples.",sep=""))
-        if(IQRfilterPercentage>0) message(paste("Gene expression matrix filtered to remove ",(IQRfilterPercentage*100),"% of the genes (IQR filter). Number of genes left: ",dim(esetFiltered)[1],sep=""))
-        message(paste("Gene associations calculated between genes with posterior probability over  ",lpThreshold,sep=""))        # ," (top ",100-(lpThreshold*100),"% of the genes ranking)"
-        message(paste("Classifier built removing gene associations/redundancy: ",(removeInteractions || removeCorrelations),sep=""))
-        message(paste("\tCorrelations removed: ",ifelse(removeCorrelations, paste("Pearsons Correlation Coeff. >", correlationsThreshold, sep="") , "FALSE"),sep=""))
-        message(paste("\tInteractions removed: ",ifelse(removeInteractions, paste("Mutual Information Coeff. >", interactionsThreshold, sep="") , "FALSE"),sep=""))        
-        message(paste("Maximum number of genes explored to find the optimum classifier:",sep=""))
-        print( apply(t(sapply(numGenesTPglobal, function(x) x[nrow(x),-ncol(x)])), 2, max))
+        message(paste(format(Sys.time(), "%H:%M:%S")," - Classifier trained with ",numSamples," samples.", sep=""))
 
+        message(paste("Total number of genes included in the classifier: ",sum(numTrainGenes[numCV.total,]),sep=""));
+        if(numClasses > 2)
+        {
+            if(all(colnames(numTrainGenes) == classes))
+            {
+                classNames <- colnames(numTrainGenes)
+            }
+            # else{
+            #     classNames <- paste("C", 1:numClasses," (", classes, ")", sep="")
+            # }
+            message(paste("Number of genes per class: \n ", paste("\t", classNames,": ", numTrainGenes[numCV.total,], " genes", sep="", collapse="\n "), sep=""))
+        }
+
+        if(removeInteractions || removeCorrelations) 
+        {
+            associationsMessage <- paste("Genes with")
+            if(removeCorrelations) associationsMessage <- paste(associationsMessage, " Correlation>", correlationsThreshold, sep="")
+            if(removeCorrelations && removeInteractions) associationsMessage <- paste(associationsMessage, " or", sep="")
+            if(removeInteractions) associationsMessage <- paste(associationsMessage, " Mutual Information>", interactionsThreshold, sep="") 
+            associationsMessage <- paste(associationsMessage, " were removed from these lists.")
+        }else{
+            associationsMessage <- "No associations/redundancy was removed between these genes"
+        }
+        message(associationsMessage)
+        
+        # if Two classes
+        if(numClasses==2) message(twoClassesMessage)
+
+        # message(paste("Maximum number of genes explored in each internal loop to find the optimum classifier:",sep=""))
+        # print( apply(t(sapply(numGenesTPglobal, function(x) x[nrow(x),-ncol(x)])), 2, max))
         #if utilizado genesNetwork/genesing... avisar...
     }
     if (estimateGError && verbose)
@@ -742,20 +764,22 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     # lp: Number of genes per class with PostProb over lpThreshold    
     if(buildClassifier || estimateGError)
     {
+        warningMsg <- NULL
         firstWarning <- TRUE
-        for(i in 1: length(lp))
+        for(i in 1:length(lp))
         {
             if(any(numTrainGenes[,i]> lp[i]))
             {
                     if(firstWarning)
                     {
-                        warning (paste("For these classes, it was needed to take some genes with posterior probability under the ", lpThreshold," threshold:",sep=""))
+                        warningMsg <- paste("It is needed to take some genes with posterior probability under the ", lpThreshold," threshold:",sep="")
                         firstWarning<-FALSE
                     }
-                    if(estimateGError) print(paste(names(lp[i]), ": ", lp[i]," genes over threshold. Between ",min(numTrainGenes[,i])," and ",max(numTrainGenes[,i])," genes needed to train the classifier.", sep=""))
-                    else print(paste(names(lp[i]), ": ", lp[i]," genes over threshold. ", numTrainGenes[,i]," genes needed to train the classifier.", sep=""))
+                    if(estimateGError) warningMsg <- paste(warningMsg, "\n ", names(lp[i]), ": ", lp[i]," genes over threshold. Between ",min(numTrainGenes[,i])," and ",max(numTrainGenes[,i])," genes needed to train the classifier.", sep="")
+                    else warningMsg <- paste(warningMsg, "\n ", names(lp[i]), ": ", lp[i]," genes over threshold. ", numTrainGenes[,i]," genes needed to train the classifier.", sep="")
             }
         }
+        if(!is.null(warningMsg)) warning(warningMsg)
     }
     
     #### RETURNS
@@ -844,6 +868,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
         if (verbose) { message(paste("The plots were saved in ",getwd()," with the prefix '",plotsName,"'.",sep="")); flush.console()}
     }
         
+    flush.console()
     return(geNetClassifierReturn)
 }
 
