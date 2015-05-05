@@ -91,13 +91,18 @@ iqr.filter <- function(eset, percentage = 0.50)
         rownames(newEset)<-rownames(eset)
         eset<-newEset
     }
-
-  num <- dim(eset)[[2]]
-  lowQ <- rowQ(eset, floor(0.25*num))
-  upQ <- rowQ(eset, ceiling(0.75*num))
-  iqrs<- upQ - lowQ
-  giqrs <- iqrs > quantile(iqrs, probs= percentage)
-  return(giqrs)
+    
+    if(percentage>0)
+    {
+        num <- dim(eset)[[2]]
+        lowQ <- rowQ(eset, floor(0.25*num))
+        upQ <- rowQ(eset, ceiling(0.75*num))
+        iqrs <- upQ - lowQ
+        giqrs <- iqrs > quantile(iqrs, probs=percentage)
+    }else{
+        giqrs <- 1:nrow(eset)
+    }
+    return(giqrs)
 }
 
 ## Calculo de las probabilidades posteriores de los genes para cada hipotesis

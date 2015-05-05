@@ -160,7 +160,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     ifelse (buildClassifier, numCV.total <- numCV.extern + 1, numCV.total <- numCV.extern) # If buildClassifier and Calculate statistics : +1 loop
     
     # Filter data, calculate Posterior Probabilities and rank genes
-    if (verbose){ message(paste(format(Sys.time(), "%H:%M:%S"),"- Filtering data and calculating the genes ranking...")); flush.console()}
+    if (verbose && is.null(precalcGenesRanking)){ message(paste(format(Sys.time(), "%H:%M:%S"),"- Filtering data and calculating the genes ranking...")); flush.console()}
     esetFiltered <- eset[iqr.filter(eset,IQRfilterPercentage),]
     rm(eset)
     if(dim(esetFiltered)[1]< numClasses) stop(paste("Applying a filter percentage of ",IQRfilterPercentage," there are not enough genes left to perform the classiffication. Try with a lower filter percentage.",sep=""))
@@ -182,7 +182,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     if(!is.null(genesRankingGlobal) && (sum(!rownames(genesRankingGlobal@postProb) %in% rownames(esetFiltered)) > 0))     # There are genes in the genesRanking which arent in the eset -> Recalculate
     {
         genesRankingGlobal <- NULL
-        message("The genesRanking given as argument doesn't match the dataset. Recaculculating the genesRanking...")
+        message("The genesRanking given as argument doesn't match the dataset. Recalculating the genesRanking...")
     }
     if (!is.null(genesRankingGlobal) &&    any(!rownames(esetFiltered) %in% rownames(genesRankingGlobal@postProb)) )    # There are missing genes from the eset  in the genesranking -> Warning (Most likely ok, just filtered)
     {
@@ -193,7 +193,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
        if(!is.null(geneLabels)) genesRankingGlobal <- setProperties(genesRankingGlobal, geneLabels=geneLabels)
     
     # Default lpThreshold= 0.95. 
-    lp <-     numSignificantGenes(genesRankingGlobal, lpThreshold=lpThreshold)
+    lp <- numSignificantGenes(genesRankingGlobal, lpThreshold=lpThreshold)
     lpMaxGenes <- lp
     if (estimateGError)
     {
@@ -211,7 +211,8 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     topGenes <- as.vector(getRanking(getTopRanking(genesRankingGlobal, lpMaxGenes), showGeneID=TRUE, showGeneLabels=FALSE)$geneID)
     topGenes <- topGenes[which(!is.na(topGenes))]
     meanExprDiff <- difMean(esetFiltered[topGenes,], sampleLabels)
-    if(numClasses==2) twoClassesMessage <- paste("\nNOTE: Since there are only two classes, the expression difference was calculated for ", colnames(meanExprDiff), " (", levels(sampleLabels)[1]," was used as reference/control)", sep="")
+    twoClassesMessage <- NULL 
+    if(numClasses==2 && is.null(precalcGenesRanking)) twoClassesMessage <- paste("\nNOTE: Since there are only two classes, the expression difference was calculated for ", colnames(meanExprDiff), " (", levels(sampleLabels)[1]," was used as reference/control)", sep="")
     genesRankingGlobal <- setProperties(genesRankingGlobal, meanDif=meanExprDiff)
     
     # Calculate genes with Correlations & Interactions
@@ -745,7 +746,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
         message(associationsMessage)
         
         # if Two classes
-        if(numClasses==2) message(twoClassesMessage)
+        if(!is.null(twoClassesMessage)) message(twoClassesMessage)
 
         # message(paste("Maximum number of genes explored in each internal loop to find the optimum classifier:",sep=""))
         # print( apply(t(sapply(numGenesTPglobal, function(x) x[nrow(x),-ncol(x)])), 2, max))

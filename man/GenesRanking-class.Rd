@@ -46,7 +46,7 @@ Plot the ranking genes's posterior probability: \code{\link[geNetClassifier:plot
 }
 \examples{
 ######
-# Load data and obtain a genesRanking
+# Calculate a genesRanking
 ######
 
 # Load an expressionSet:
@@ -57,39 +57,74 @@ data(leukemiasEset)
 trainSamples<- c(1:10, 13:22, 25:34, 37:46, 49:58) 
 # summary(leukemiasEset$LeukemiaType[trainSamples])
 
-# Train a classifier or load a trained one:
-# leukemiasClassifier <- geNetClassifier(leukemiasEset[,trainSamples], 
-#     sampleLabels="LeukemiaType", plotsName="leukemiasClassifier") 
-data(leukemiasClassifier) # Sample trained classifier
-
-# Or directly obtain a genesRanking with calculateGenesRanking()
-\dontrun{genesRanking <- calculateGenesRanking(leukemiasEset[,trainSamples], 
+# Calculate the genesRanking with calculateGenesRanking()
+\dontrun{
+genesRanking <- calculateGenesRanking(leukemiasEset[,trainSamples], 
     sampleLabels="LeukemiaType", returnRanking="full")}
+
+# geNetClassifier() also calculates a genes ranking
+# Sample output: 
+data(leukemiasClassifier) 
+genesRanking <- leukemiasClassifier@genesRanking
 
 ######
 # Exploring the rankings
 ######
-genesRanking <- leukemiasClassifier@genesRanking
 # Number of available genes in the ranking:
 numGenes(genesRanking)
+
 # Number of significant genes (genes with posterior probability over the threshold. 
 # Default: lpThreshold=0.95):
 numSignificantGenes(genesRanking)
+
 # Top 10 genes of CML:
 genesDetails(genesRanking)$CML[1:10,]
+
 # To get a sub ranking with the top 10 genes:
 getTopRanking(genesRanking, 10)
+
 # Genes details of the top 10 genes:
 genesDetails(getTopRanking(genesRanking, 10))	
 
-###
-# Genes used for training the classifier:
-###
+######
+# Exploring the genes used for training the classifier
+######
 numGenes(leukemiasClassifier@classificationGenes)
 leukemiasClassifier@classificationGenes
 #genesDetails(leukemiasClassifier@classificationGenes)  # List by classes
 genesDetails(leukemiasClassifier@classificationGenes)$AML # Show a class genes
 # If your R console wraps the table rows, try widening your display width: 
 # options(width=200)
+
+######
+# Creating a GenesRanking object
+# i.e. To use geNetClassifier() with a ranking based on another algorithm
+######
+
+### 1. Calculate gene scores 
+# Two classes:
+geneScore <- matrix(sample(seq(0,1,by=0.01), size=100, replace=TRUE))
+colnames(geneScore) <- "BothClasses"
+rownames(geneScore) <- paste("Gene", 1:100, sep="")
+
+# More than two classes:
+geneScore <- matrix(sample(seq(0,1,by=0.01), size=300, replace=TRUE), ncol=3)
+colnames(geneScore) <- paste("Class", 1:3, sep="")
+rownames(geneScore) <- paste("Gene", 1:100, sep="")
+
+### 2. Create object
+postProb <- geneScore
+ord <- apply(postProb, 2, function(x) order(x, decreasing=TRUE))
+numGenesClass <- apply(postProb, 2, function(x) sum(!is.na(x)))
+customRanking <- new("GenesRanking", postProb=postProb, ord=ord, numGenesClass=numGenesClass)
+
+# GenesRanking object ready:
+customRanking
+genesDetails(customRanking)
+customRanking@numGenesClass
+numSignificantGenes(customRanking)
+
+# geNetClassifier(..., precalcGenesRanking = customRanking)
+
 }
 \keyword{classes}

@@ -44,22 +44,22 @@ setClass(Class="GenesRanking",
             # Check dimensions 
             # Dim[1] (gene number)
             if(max(numGenesClass)>dim(ord)[1]) stop("There cant be more genes by class than availables in ord.")
-            if(dim(ord)[1]>max(numGenesClass)) ord <- ord[1:max(numGenesClass),] # They should be equal
+            if(dim(ord)[1]>max(numGenesClass)) ord <- ord[1:max(numGenesClass),, drop=FALSE] # They should be equal
             # Dim[2] (classes)
-            if(dim(postProb)[2] != length(numGenesClass)+1) stop("The number of classes in postProb does not match numGenesClass.")
-
-            if(dim(ord)[2] != length(numGenesClass)) stop("The number of classes in ord does not match numGenesClass.")
+           # if(dim(postProb)[2] != length(numGenesClass)+1) stop("The number of classes in postProb does not match numGenesClass.")
+           if(dim(ord)[2] != length(numGenesClass)) stop("The number of classes in ord does not match numGenesClass.")
             
             # Check names
             if(any(!colnames(ord) %in% names(numGenesClass)) || any(!names(numGenesClass) %in% colnames(ord))) stop("The classes in ord do not match the ones in numGenesClass.")
+            if(!"Null Hipothesis" %in% colnames(postProb)) postProb <- cbind("Null Hipothesis"=rep(0,nrow(postProb)), postProb)
             if(any(!colnames(postProb) %in% c("Null Hipothesis", names(numGenesClass))) || any(!names(numGenesClass) %in% colnames(postProb))) stop("The classes in postProb do not match the ones in numGenesClass.")
-            
             if(is.matrix(meanDif))
             {
                 if(length(numGenesClass)>1 &&(dim(meanDif)[2] != length(numGenesClass))) stop("The number of classes in meanDif does not match numGenesClass.")
                 if(dim(postProb)[1] != dim(meanDif)[1]) stop("The number of genes in postProb and in meanDif does not match")
                 .Object@meanDif  <- meanDif
             }
+           
             .Object@postProb <- postProb
             .Object@numGenesClass<- numGenesClass
             .Object@ord         <- ord
@@ -68,14 +68,20 @@ setClass(Class="GenesRanking",
         {
             if(!is.null(classes)) # Not all are provided, but the classes are. An empty genesRanking will be created.
             {
-                .Object@postProb <- matrix(data=0, nrow=0, ncol=length(classes)+1);
-                colnames(.Object@postProb)<- c("Null Hipothesis", classes)
-                .Object@meanDif  <- matrix(data=0, nrow=0, ncol=length(classes));
-                colnames(.Object@meanDif)<-classes
-                .Object@numGenesClass<-rep(as.numeric(0),length(classes));
-                names(.Object@numGenesClass)<-classes
-                .Object@ord         <-  matrix(data=0, nrow=0, ncol=length(classes));
-                colnames(.Object@ord)<-classes
+                classes2ini <- classes
+                if(length(classes)==2) classes2ini <- "BothClasses"
+                
+                .Object@postProb <- matrix(data=0, nrow=0, ncol=length(classes2ini)+1);
+                colnames(.Object@postProb) <- c("Null Hipothesis", classes2ini)
+                
+                .Object@meanDif  <- matrix(data=0, nrow=0, ncol=length(classes2ini));
+                colnames(.Object@meanDif) <- classes2ini
+                
+                .Object@numGenesClass <- rep(as.numeric(0),length(classes2ini));
+                names(.Object@numGenesClass) <- classes2ini
+                
+                .Object@ord <- matrix(data=0, nrow=0, ncol=length(classes2ini));
+                colnames(.Object@ord) <- classes2ini
             }
             else 
             {
@@ -89,7 +95,6 @@ setClass(Class="GenesRanking",
         
         if(!is.null(geneLabels))
         {
-            
             .Object@geneLabels <- extractGeneLabels(geneLabels, rankingGenes)
         }
         
@@ -132,7 +137,7 @@ setClass(Class="GenesRanking",
             print(getRanking(object, showGeneLabels=TRUE)[[1]][1:nRows,,drop=FALSE])        # By default shows the geneName if available
 
             if(nrow(object@ord)>100){
-                cat("...\n\nNumber of ranked significant genes (posterior probability over threshold):\n\t",colnames(object@ord),"\n\t",numSignificantGenes(object, lpThreshold=0.95),sep=" ")
+                cat("...\n\nNumber of ranked significant genes (posterior probability over 0.95 threshold):\n\t",colnames(object@ord),"\n\t",numSignificantGenes(object, lpThreshold=0.95),sep=" ")
                 cat("\nTo see the whole ranking (",nrow(object@ord)," rows) use: getRanking(...)",sep="")
             }
             cat("\nDetails of the top X ranked genes of each class: genesDetails(..., nGenes=X)\n")
@@ -309,18 +314,18 @@ setClass(Class="GenesRanking",
         index<-0
         for(cl in colnames(object@ord)) 
         {
-                if(numGenesClass[cl] > 0) 
-                {
-                    topGenes[-c(1:numGenesClass[cl]),cl] <- NA
-                    newOrd[1:numGenesClass[cl],cl] <- (index+1):(index+numGenesClass[cl])
-                }else{
-                        topGenes[,cl] <- NA
-                }
-                index <- index+numGenesClass[cl]
+            if(numGenesClass[cl] > 0) 
+            {
+                topGenes[-c(1:numGenesClass[cl]),cl] <- NA
+                newOrd[1:numGenesClass[cl],cl] <- (index+1):(index+numGenesClass[cl])
+            }else{
+                    topGenes[,cl] <- NA
+            }
+            index <- index+numGenesClass[cl]
         }
 
         topGenes <- topGenes[which(topGenes!="NA")]
-        ret <- new("GenesRanking",  postProb=object@postProb[topGenes,], numGenesClass=numGenesClass , ord=newOrd)
+        ret <- new("GenesRanking", postProb=object@postProb[topGenes,], numGenesClass=numGenesClass , ord=newOrd)
         if(nrow(object@meanDif) > 0) meanDif <- object@meanDif[topGenes,, drop=FALSE]  else meanDif <- object@meanDif
         if(length(object@geneLabels) > 0 &&  any(!is.na(object@geneLabels))) geneLabels <- object@geneLabels[topGenes] else geneLabels <-  object@geneLabels
         #if(ncol(object@discriminantPower) > 0 &&  any(!is.na(object@discriminantPower))) discriminantPower <- object@discriminantPower[topGenes,] else discriminantPower <-  object@discriminantPower

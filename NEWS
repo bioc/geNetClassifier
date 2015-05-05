@@ -1,3 +1,10 @@
+CHANGES IN VERSION 1.9
+----------------------
+    o Added CITATION
+    o GenesRanking help: How to create a GenesRanking object based on scores provided by another algorithm
+    o Several message and warning improvements
+    o Bugfix: 0 IQR filter now returns the original matrix
+
 CHANGES IN VERSION 1.6.1
 ----------------------
     o Vignette update
