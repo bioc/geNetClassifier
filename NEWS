@@ -1,3 +1,7 @@
+CHANGES IN VERSION 1.9.3
+----------------------
+    o Updated for compatibility with igraph 1.0
+    
 CHANGES IN VERSION 1.9
 ----------------------
     o Added CITATION

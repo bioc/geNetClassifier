@@ -1492,7 +1492,7 @@ plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NU
                 # Layout
                 if(is.null(layoutList)) 
                 {
-                    graphLayout <- layout.fruchterman.reingold(classGraph, niterNumeric=500) # .grid is faster, but the result looks far worse.
+                    graphLayout <- layout.fruchterman.reingold(classGraph) # .grid is faster, but the result looks far worse.
                 }else
                 {
                     graphLayout <- layoutList[[nw]]
