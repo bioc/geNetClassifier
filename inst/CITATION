@@ -1,0 +1,22 @@
+citEntry(entry="Article",
+  author = personList(
+    person(given="Sara", family="Aibar"),
+    person(given="Celia", family="Fontanillo"),
+    person(given="Conrad", family="Droste"),
+    person(given="Beatriz", family="Roson-Burgo"),
+    person(given="Francisco J", family="Campos-Laborie"),
+    person(given="Jesus M", family="Hernandez-Rivas"),
+    person(given="Javier", family="De Las Rivas")),
+  title ="Analyse multiple disease subtypes and build associated gene networks using genome-wide expression profiles",
+  journal ="BMC Genomics",
+  volume ="16",
+  number = "Suppl 5",
+  year ="2015", 
+  doi = "10.1186/1471-2164-16-S5-S3",
+  textVersion="Aibar S, Fontanillo C, Droste C, Roson-Burgo B, Campos-Laborie F, Hernandez-Rivas J and De Las Rivas J (2015). Analyse multiple disease subtypes and build associated gene networks using genome-wide expression profiles. BMC Genomics,
+16(Suppl 5). doi:10.1186/1471-2164-16-S5-S3")
+
+
+
+
+
