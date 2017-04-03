@@ -1,3 +1,7 @@
+CHANGES IN VERSION 1.15.0
+----------------------
+    o Update for compatibility with new R versions. The confusion matrix is now an object of class 'table'.
+
 CHANGES IN VERSION 1.9.3
 ----------------------
     o Updated for compatibility with igraph 1.0

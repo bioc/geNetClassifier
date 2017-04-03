@@ -550,7 +550,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
                     globalResults <- c(globalResults, queryResult)
                     
                     # Matriz de confusion - Real x prediction    
-                    mxcfi <- table(testLabels, prediction)[1:numClasses,]    
+                    mxcfi <- table(testLabels, prediction)[1:numClasses,]
                     mxcf <- mxcf + mxcfi
                     
                     if (verbose) { message(paste(format(Sys.time(), "%H:%M:%S")," - ",i," out of " ,ifelse(buildClassifier,numCV.total-1,numCV.total)," cross-validation loops finished.", sep="")); flush.console()}
@@ -572,7 +572,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
         # General Stats
         numTestedSamples <- sum(mxcf)
 
-        confusionMatrixStats <- externalValidation.stats (mxcf, numDecimals=numDecimals)
+        confusionMatrixStats <- externalValidation.stats(mxcf, numDecimals=numDecimals)
         predictionStats <- querySummary(globalResults, numDecimals=numDecimals, showNotAssignedSamples=TRUE, verbose=FALSE)
         probMatrix <- externalValidation.probMatrix(globalResults, sampleLabels, numDecimals=numDecimals)
       
@@ -629,7 +629,6 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
 
             genesStats<- c(genesStats, list(classTable))
         }
-
         names(genesStats) <- classList
         generalizationError  <- new("GeneralizationError", 
                                                                 accuracy=confusionMatrixStats$global, 
