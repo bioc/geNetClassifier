@@ -9,19 +9,19 @@ Trains the multi-class SVM classifier based on the given gene expression data th
 Allows to train the classifier, calculate the genes network...
 }
 \usage{
-geNetClassifier(eset, sampleLabels, plotsName = NULL, 
-buildClassifier = TRUE, estimateGError = FALSE, 
-calculateNetwork = TRUE, labelsOrder = NULL, geneLabels = NULL, 
-numGenesNetworkPlot = 100, 
+geNetClassifier(eset, sampleLabels, plotsName = NULL,
+buildClassifier = TRUE, estimateGError = FALSE,
+calculateNetwork = TRUE, labelsOrder = NULL, geneLabels = NULL,
+numGenesNetworkPlot = 100,
 minGenesTrain = 1, maxGenesTrain = 100, continueZeroError = FALSE,
 numIters = 6, lpThreshold = 0.95, numDecimals = 3,
-removeCorrelations = FALSE, correlationsThreshold = 0.8, 
+removeCorrelations = FALSE, correlationsThreshold = 0.8,
 correlationMethod = "pearson",
-removeInteractions = FALSE, interactionsThreshold = 0.5, 
-minProbAssignCoeff = 1, minDiffAssignCoeff = 0.8, 
-IQRfilterPercentage = 0, skipInteractions = TRUE, 
-precalcGenesNetwork = NULL, precalcGenesRanking = NULL, 
-returnAllGenesRanking = TRUE, verbose = TRUE)
+removeInteractions = FALSE, interactionsThreshold = 0.5,
+minProbAssignCoeff = 1, minDiffAssignCoeff = 0.8,
+IQRfilterPercentage = 0, skipInteractions = TRUE,
+precalcGenesNetwork = NULL, precalcGenesRanking = NULL,
+returnAllGenesRanking = TRUE, kernel="linear", verbose=TRUE, ...)
 }
 \arguments{
  \item{eset}{
@@ -107,8 +107,15 @@ Logical. If TRUE, the interactions between genes are not calculated (they will n
 Logical. If TRUE, returns the whole genes ranking. If FALSE the returned ranking contains only the significant genes (genes over lpThreshold).
 }
   \item{verbose}{
-Logical. If TRUE, messages indicating the execution progress will be shown. 
-} 
+Logical. If TRUE, messages indicating the execution progress will be shown.
+}
+  \item{kernel}{
+Character. Type of SVM kernel. Default: "linear",
+}
+  \item{...}{
+Other arguments to pass to the \code{\link{svm}} function.
+}
+
 }
 
 \value{
@@ -120,8 +127,8 @@ Several plots saved as '\code{plotsName_....pdf}' in the working directory.
 Bioinformatics and Functional Genomics Group. Centro de Investigacion del Cancer (CIC-IBMCC, USAL-CSIC). Salamanca. Spain
 }
 % \note{
-% TO DO: 
-% Any further notes? 
+% TO DO:
+% Any further notes?
 % i.e. Explicacion de LP 1/4?
 % }
 
@@ -134,21 +141,21 @@ Packages used by this function:\cr
  Ming Yuan, Michael Newton, Deepayan Sarkar and Christina Kendziorski (2007). EBarrays: Unified Approach for Simultaneous Gene Clustering and Differential Expression Identification. R package.\cr
  \cr
 \code{\link[e1071:svm]{e1071: svm}}.\cr
-Evgenia Dimitriadou, Kurt Hornik, Friedrich Leisch, David Meyer and Andreas Weingessel (2011). e1071: Misc Functions of the Department of Statistics (e1071), TU Wien. R package.\cr 
+Evgenia Dimitriadou, Kurt Hornik, Friedrich Leisch, David Meyer and Andreas Weingessel (2011). e1071: Misc Functions of the Department of Statistics (e1071), TU Wien. R package.\cr
 http://CRAN.R-project.org/package=e1071\cr
 \cr
 \code{\link[ipred:kfoldcv]{ipred: kfoldcv}} (computes feasible sample sizes for the k groups in k-fold cv) for the cross-validations.\cr
   Andrea Peters and Torsten Hothorn (2012). ipred: Improved Predictors. R package. http://CRAN.R-project.org/package=ipred\cr
 \cr
 \code{\link[minet:minet]{minet}} for the Mutual Information network.\cr
-Patrick E. Meyer, Frederic Lafitte and Gianluca Bontempi (2008). MINET: An open source R/Bioconductor Package for Mutual Information based Network Inference. BMC Bioinformatics.\cr 
+Patrick E. Meyer, Frederic Lafitte and Gianluca Bontempi (2008). MINET: An open source R/Bioconductor Package for Mutual Information based Network Inference. BMC Bioinformatics.\cr
 http://www.biomedcentral.com/1471-2105/9/461\cr
 \cr
-\code{\link[RColorBrewer:brewer.pal]{RColorBrewer}} for palettes in some of the plots.\cr
+\code{\link{RColorBrewer}} (\code{brewer.pal}) for palettes in some of the plots.\cr
   Erich Neuwirth (2011). RColorBrewer: ColorBrewer palettes. R package. \cr
   http://CRAN.R-project.org/package=RColorBrewer\cr
 \cr
-\code{\link[igraph:igraph]{igraph}} for the graphical representation of the networks.\cr
+\code{\link{igraph}} for the graphical representation of the networks.\cr
   Csardi G, Nepusz T: The igraph software package for complex network research, InterJournal, Complex Systems 1695. 2006. http://igraph.sf.net\cr
 }
 
@@ -166,8 +173,8 @@ All functions in the package: \code{\link[geNetClassifier:geNetClassifier-packag
 library(leukemiasEset)
 data(leukemiasEset)
 
-# Select the train samples: 
-trainSamples<- c(1:10, 13:22, 25:34, 37:46, 49:58) 
+# Select the train samples:
+trainSamples<- c(1:10, 13:22, 25:34, 37:46, 49:58)
 # summary(leukemiasEset$LeukemiaType[trainSamples])
 
 
@@ -175,27 +182,27 @@ trainSamples<- c(1:10, 13:22, 25:34, 37:46, 49:58)
 # Training
 ########
 
-# NOTE: Training the classifier takes a while... 
+# NOTE: Training the classifier takes a while...
 # Choose ONE of the followings, or modify to suit your needs:
 \dontrun{
-	
+
 # "Basic" execution: All default parameters
-leukemiasClassifier <- geNetClassifier(eset=leukemiasEset[,trainSamples], 
-    sampleLabels="LeukemiaType", plotsName="leukemiasClassifier") 
+leukemiasClassifier <- geNetClassifier(eset=leukemiasEset[,trainSamples],
+    sampleLabels="LeukemiaType", plotsName="leukemiasClassifier")
 
 # All default parameters also estimatings the classiffier's Generalization Error:
 # ( by default:  buildClassifier=TRUE, calculateNetwork=TRUE)
 # Takes longer time than the basic execution
-leukemiasClassifier <- geNetClassifier(eset=leukemiasEset[,trainSamples], 
+leukemiasClassifier <- geNetClassifier(eset=leukemiasEset[,trainSamples],
     sampleLabels="LeukemiaType", plotsName="leukemiasClassifier",
-    estimateGError=TRUE) 
+    estimateGError=TRUE)
 
-# Faster execution (few minutes - depending on the computer): 
-# By skipping the calculation of the interactions (MI) betwen the genes, 
-# and reducing the number of genes to explore when training the classifier 
+# Faster execution (few minutes - depending on the computer):
+# By skipping the calculation of the interactions (MI) betwen the genes,
+# and reducing the number of genes to explore when training the classifier
 # (100 by default), the execution time can be sightly reduced
 leukemiasClassifier <- geNetClassifier(eset=leukemiasEset[,trainSamples],
-sampleLabels="LeukemiaType", plotsName="leukemiasClassifier", 
+sampleLabels="LeukemiaType", plotsName="leukemiasClassifier",
 skipInteractions= TRUE, maxGenesTrain=20)
 
 # To any of these examples, you can add/remove the argument geneLabels,
@@ -203,18 +210,18 @@ skipInteractions= TRUE, maxGenesTrain=20)
 # The argument labelsOrder allows showing the classes in a specific order
 # i.e.: labelsOrder=c("ALL","CLL","AML",CML","NoL")
 
-save(leukemiasClassifier, file="leukemiasClassifier.RData")  # Save execution result 
-# For loading the saved object in the future... 
+save(leukemiasClassifier, file="leukemiasClassifier.RData")  # Save execution result
+# For loading the saved object in the future...
 # (If it doesn't find it, use getwd() to make sure you are in the right directory)
-#load("leukemiasClassifier.RData")										
+#load("leukemiasClassifier.RData")
 
 
-# To avoid having to train a classifier to continue learning to use the package, 
+# To avoid having to train a classifier to continue learning to use the package,
 # you can load the package's pre-executed example:
-data(leukemiasClassifier)  					
+data(leukemiasClassifier)
 #This example classifier was trained with the following code:
-#leukemiasClassifier <- geNetClassifier(leukemiasEset[,trainSamples], 
-#    "LeukemiaType", plotsName="leukemiasClassifier", buildClassifier=TRUE, 
+#leukemiasClassifier <- geNetClassifier(leukemiasEset[,trainSamples],
+#    "LeukemiaType", plotsName="leukemiasClassifier", buildClassifier=TRUE,
 #    estimateGError=TRUE, calculateNetwork=TRUE, geneLabels=geneSymbols)
 
 ########
@@ -228,7 +235,7 @@ names(leukemiasClassifier)
 # The trained classifier can be used to find the class of new samples:
 ?queryGeNetClassifier
 
-# The default plots can be modified and presonalized to fit the user needs: 
+# The default plots can be modified and presonalized to fit the user needs:
 ?calculateGenesRanking
 ?plotNetwork
 ?plotDiscriminantPower
@@ -238,4 +245,3 @@ names(leukemiasClassifier)
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{classif}
-

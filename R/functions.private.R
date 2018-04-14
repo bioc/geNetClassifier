@@ -8,8 +8,8 @@
 #   gene.select
 # difMean
 # linear.SVM
-# interaction.net    
-# correlation.net           
+# interaction.net
+# correlation.net
 # remove.redundancy
 # plotGeNetClassifierReturn
 # configurePlotOutput
@@ -23,7 +23,7 @@
 ############################### PRIVATE FUNCTIONS ##############################
 
 
-## Estima los parametros de cross validation (numero de vueltas del bucle interno y externo) en base al numero de elemtos de cada clase  
+## Estima los parametros de cross validation (numero de vueltas del bucle interno y externo) en base al numero de elemtos de cada clase
 ## Si el numero de elementos por clase es menor que 7, no hay suficientes elementos para realizar el bucle externo: numCV.extern=1
 cvNumbers <- function(numElemClass)
 {
@@ -59,7 +59,7 @@ create.hypothesis <- function(classLabels)
         names(hypothesis)<- c("Null Hipothesis")
         return (hypothesis);
     }
-    
+
     # Add hypothesis for each class
     for (i in classNames)
     {
@@ -91,7 +91,7 @@ iqr.filter <- function(eset, percentage = 0.50)
         rownames(newEset)<-rownames(eset)
         eset<-newEset
     }
-    
+
     if(percentage>0)
     {
         num <- dim(eset)[[2]]
@@ -106,7 +106,7 @@ iqr.filter <- function(eset, percentage = 0.50)
 }
 
 ## Calculo de las probabilidades posteriores de los genes para cada hipotesis
-## Recibe como argumento una matriz con los datos de expresion, el conjunto de hipotesis, el numero de clases, 
+## Recibe como argumento una matriz con los datos de expresion, el conjunto de hipotesis, el numero de clases,
 ## el numero de elementos de cada clase y un booleano indicando si se van a devolver solo los genes sobreexpresados (TRUE) o tanto los genes soberexpresados como reprimidos (FALSE)
 
 # En nuestro programa la opcion onlyOverExpressed no se utiliza
@@ -122,9 +122,9 @@ PEB <- function(eset, sampleLabels, labelsOrder=NULL,  nullHiphothesisFilter=0.9
     postProb <- postProb[postProb[,"Null Hipothesis"] < nullHiphothesisFilter,, drop=FALSE]
     if(dim(postProb)[1] == 0) stop("The current genes don't differentiate the classes.")
     # Si hay un solo gen y 1 sola clase puede dar error...
-    
+
     if(!is.null(labelsOrder))  postProb <-postProb[,c("Null Hipothesis", labelsOrder)]
-    
+
     genesOrder <- calculateOrder(eset, sampleLabels, postProb, untie=untie)
 
     # Returns the order and the posterior probabilities
@@ -133,18 +133,18 @@ PEB <- function(eset, sampleLabels, labelsOrder=NULL,  nullHiphothesisFilter=0.9
 }
 
 
-# calculate order 
+# calculate order
 calculateOrder <- function (eset, sampleLabels, postProb,untie)        #untie="bestRank" / "bestPostProb"
 {
     numClasses <- ncol(postProb) -1
     ranking <- apply(-postProb[,-1,drop=FALSE], 2, rank, ties.method="min")
-    
+
     # Desempatar:
     empates <- NULL
     if(numClasses > 2)
-    {   
+    {
         tab<- apply(ranking, 2, table)
-        if(is.matrix(tab)) 
+        if(is.matrix(tab))
         {
             temp<-NULL
             for(i in 1:dim(tab)[2]) temp[[i]]<-tab[,i]
@@ -153,7 +153,7 @@ calculateOrder <- function (eset, sampleLabels, postProb,untie)        #untie="b
         }
         empates <- lapply(tab, function(x)   names(which(x>1))) #if (any(x>1))
     }else                             empates <- list(BothClasses=names(which(table(ranking)>1)))
-    
+
     if(!is.null(names(empates)))
     {
         for (cl in names(empates))
@@ -162,25 +162,25 @@ calculateOrder <- function (eset, sampleLabels, postProb,untie)        #untie="b
             {
                 meanDiffs <- lapply( empates[[cl]], function(x) { minimumDiff (rownames(ranking)[which(ranking[,cl] == x)], cl, eset, sampleLabels)})
                 names(meanDiffs)  <- empates[[cl]]
-                
+
                 meanDiffRanks <- lapply(meanDiffs, function(x) {rank(-x)-1}) # rank(-meanDiff)-1
                 for(rnk in names(meanDiffRanks))
                 {
                     ranking[names(meanDiffRanks[[rnk]]),cl] <- as.numeric(rnk) + meanDiffRanks[[rnk]]   # (without drop=FALSE)
                 }
             }
-        }    
+        }
     }
-    
+
     # New order:
-    ord <- apply(ranking, 2, order)    
-    
+    ord <- apply(ranking, 2, order)
+
     # Remove repeated genes from ord:     Keep genes only in the class with best rank
     if(numClasses > 2 )
     {
         if(untie == "bestRank")    # The gene is kept in the class with best rank. (if there is a tie, maybe the postProbs should be compared, but not likely and would take longer)
         {
-            for(gen in 1:dim(ord)[1]) 
+            for(gen in 1:dim(ord)[1])
             {
                 geneRanks <- which(ord == ord[gen,1], arr.ind=TRUE)
                 rmv <- geneRanks[-which(geneRanks[,1] == min(geneRanks[,1]), arr.ind=TRUE)[1],,drop=FALSE]
@@ -192,9 +192,9 @@ calculateOrder <- function (eset, sampleLabels, postProb,untie)        #untie="b
                 # }
             }
         }
-        if(untie== "bestPostProb")  # The gene is kept in the class with best postProb. 
+        if(untie== "bestPostProb")  # The gene is kept in the class with best postProb.
         {
-            for(gen in 1:dim(ord)[1]) 
+            for(gen in 1:dim(ord)[1])
             {
                 geneRanks <- which(ord == ord[gen,1], arr.ind=TRUE)
                 genePostProb <- postProb[ord[gen,1],-1]
@@ -208,13 +208,13 @@ calculateOrder <- function (eset, sampleLabels, postProb,untie)        #untie="b
         tmp<- matrix(ncol=ncol(ord), nrow=max(nGenes))
         colnames(tmp) <- colnames(ord)
         for(cl in names(nGenes))
-        {    
+        {
             if(nGenes[cl]>0) tmp[1:nGenes[cl],cl]<-   ord[which(ord[,cl]!=0),cl]
         }
         ord <- tmp
-    } else 
+    } else
     {
-        nGenes<-dim(ord)[1] 
+        nGenes<-dim(ord)[1]
         names(nGenes)<-colnames(ord)
     }
     return(list(ord=ord, nGenesClass=nGenes))
@@ -242,7 +242,7 @@ minimumDiff <- function (genesDiff, genesClass, eset, sampleLabels)
     if(any(!genesClass %in% levels(sampleLabels))) stop("The genes' class is not one of the provided sample labels.")
     minDiff <- rep(0, length(genesDiff))
     names(minDiff)  <- genesDiff
-    
+
     classes <-  levels(sampleLabels)
     numClasses <- length(classes)
     genesClass <- which(classes == genesClass)
@@ -253,7 +253,7 @@ minimumDiff <- function (genesDiff, genesClass, eset, sampleLabels)
         names(classExprsMean) <- classes
 
         for(cl in classes)
-        { 
+        {
             classExprsMean[cl] <- mean(eset[gen, names(sampleLabels) [which(sampleLabels == cl)]])
         }
         #minDiff[gen] <- min(abs(classExprsMean[genesClass] - classExprsMean[which(classExprsMean == max(classExprsMean[-genesClass]))]), abs(classExprsMean[genesClass] - classExprsMean[which(classExprsMean == min(classExprsMean[-genesClass]))]))
@@ -283,15 +283,15 @@ difMean <- function(eset, sampleLabels)
 cvSplitSamples <- function(numCV.extern, sampleLabels)
 {
     samples <- split(names(sampleLabels), sampleLabels)
-    
+
     testSamples <- vector("list", numCV.extern)
     trainSamples <- vector("list", numCV.extern)
-    
+
     for(clSamples in samples)
-    {        
+    {
         clSamples <- sample(clSamples) # shuffle
         numSamples <- length(clSamples)
-        
+
         # Split samples:
         numSamplesCV <- rep(floor(numSamples/numCV.extern), numCV.extern)
         if(numSamples%%numCV.extern!=0) numSamplesCV[0:(numSamples-(numSamplesCV[1]*numCV.extern))] <- numSamplesCV[1]+1
@@ -304,7 +304,7 @@ cvSplitSamples <- function(numCV.extern, sampleLabels)
             trainSamples[[i]] <- c(trainSamples[[i]], clSamples[!clSamples %in% testSamples[[i]]])
         }
     }
-    
+
     cvSamples <- list(train=trainSamples, test=testSamples)
     return(cvSamples)
 }
@@ -316,19 +316,23 @@ cvSplitSamples <- function(numCV.extern, sampleLabels)
 ## Devuelve una lista con el clasificador construido, la matriz de confusion y el error
 ## resultado$clasificador, resultado$matriz.confusion, resultado$error
 
-linear.SVM <- function(trainEset, trainSampleLabels, cvInternSamples, minProbAssignCoeff=1, minDiffAssignCoeff=0.8)
+svmCrossVal <- function(trainEset, trainSampleLabels, cvInternSamples, minProbAssignCoeff=1, minDiffAssignCoeff=0.8, kernel="linear", ...)
 {
   if(!is.matrix(trainEset)) trainEset <- rbind(NULL,trainEset)
   numClasses <- length(levels(trainSampleLabels))
 
-  mxcf <- matrix(data=0,  nrow=numClasses, ncol=numClasses) 
+  mxcf <- matrix(data=0,  nrow=numClasses, ncol=numClasses)
    colnames(mxcf) <- levels(trainSampleLabels)
    rownames(mxcf) <- levels(trainSampleLabels)
+   
   for( i in 1:length(cvInternSamples$train))
-  {   
+  {
     # SVM - TRAINING  (phase 1)
-    svmClassif  <-  svm(x=t(trainEset[,cvInternSamples$train[[i]], drop=FALSE]), y=trainSampleLabels[cvInternSamples$train[[i]]], C=1, kernel="linear", probability=TRUE )
-    
+    svmClassif  <-  svm(
+      x=t(trainEset[,cvInternSamples$train[[i]], drop=FALSE]),
+      y=trainSampleLabels[cvInternSamples$train[[i]]],
+      kernel=kernel, probability=TRUE, ...) # cost=1
+
         # In case there are only two classes, svmClassif$SV doesn't contain the gene names
         if (is.null(dimnames(svmClassif$SV)) && numClasses ==2)
         {
@@ -339,16 +343,16 @@ linear.SVM <- function(trainEset, trainSampleLabels, cvInternSamples, minProbAss
         predictTestSamples  <- queryGeNetClassifier(svmClassif, as.matrix(trainEset[,cvInternSamples$test[[i]], drop=FALSE]), verbose=FALSE, minProbAssignCoeff=minProbAssignCoeff, minDiffAssignCoeff=minDiffAssignCoeff)$class
         predictTestSamples  <- predictTestSamples[predictTestSamples!="NotAssigned"] # Ignorar los NA
         predictTestSamples <- factor(predictTestSamples, levels=levels(trainSampleLabels))
-    
+
     mxcf  <-  mxcf + table(predictTestSamples, trainSampleLabels[names(predictTestSamples)])
   }
   error.mxcf <- (1-(sum(diag(mxcf))/sum( mxcf )))
-  
+
   numSamples <- table(trainSampleLabels[unlist(cvInternSamples$test)])
   sensitivity.class <- diag(mxcf)/numSamples
   sensitivity.global <- sum(diag(mxcf))/sum(numSamples)
-  
-  result <- list(classifier=svmClassif, confMatrix=mxcf, error=error.mxcf, sensitClass=sensitivity.class, sensitGlobal=sensitivity.global)     
+
+  result <- list(classifier=svmClassif, confMatrix=mxcf, error=error.mxcf, sensitClass=sensitivity.class, sensitGlobal=sensitivity.global)
   return(result)
 }
 
@@ -363,14 +367,14 @@ interaction.net <- function(eset, genes, lp, method="clr", estimator="mi.empiric
 {
     require(infotheo) # required by minet
     net <- cbind(gene1=NULL, class1=character(0), gene2=NULL, class2=character(0), relation=character(0), value=numeric(0))
-    
+
     #Comprobacion de parametros
     if(is(eset, "ExpressionSet")) eset <- exprs(eset) else if (!is.matrix(eset)) {warning("The first argument (eset) should be an expression matrix or an ExpressionSet.", immediate. = TRUE)
                                 return(net)    }
     if(is.vector(genes)) genes <- as.matrix(genes)
     if(!is.matrix(genes))         {warning("The argument 'genes' should be a matrix or a vector.", immediate. = TRUE)
                                 return(net)    }
-    if(dim(genes)[1]>dim(eset)[1] || sum(which(dim(genes)==0))) {warning("The argument 'genes' can't be neither empty nor have more genes than the available.") 
+    if(dim(genes)[1]>dim(eset)[1] || sum(which(dim(genes)==0))) {warning("The argument 'genes' can't be neither empty nor have more genes than the available.")
                                                 return(net)}
     if(!is.numeric(lp))         {warning("The argument 'lp' should be numeric.", immediate. = TRUE)
                                 return(net)    }
@@ -385,18 +389,18 @@ interaction.net <- function(eset, genes, lp, method="clr", estimator="mi.empiric
     classes <- c()
     for(i in 1:length(lp))
     {
-        if(lp[i]!=0) 
+        if(lp[i]!=0)
         {
             ensg <- c(ensg, genes[1:lp[i],i])
             classes <- c(classes, rep(names(lp[i]), times=lp[i]))
         }
     }
     datos <- eset[as.vector(ensg),]
-    if(!is.matrix(datos)) 
-    {    
+    if(!is.matrix(datos))
+    {
         datos<- rbind(NULL, datos)
         rownames(datos)<- as.vector(ensg)
-    }    
+    }
     if(any(datos == -Inf)) stop("Expression matrix contains invalid values (-Inf).")
     names(classes) <- as.character(ensg)
 
@@ -415,51 +419,51 @@ interaction.net <- function(eset, genes, lp, method="clr", estimator="mi.empiric
 correlation.net <- function(eset, genes, lp, method="pearson", threshold=0.8)
 {
     net <- cbind(gene1=NULL, class1=character(0), gene2=NULL, class2=character(0), relation=character(0), value=numeric(0))
-    
+
     # Check arguments (Choose warning+ret  // stop)
-    if(is(eset, "ExpressionSet")) 
+    if(is(eset, "ExpressionSet"))
     {
-        eset <- exprs(eset) 
+        eset <- exprs(eset)
     }else
     {
-        if (!is.matrix(eset)) 
+        if (!is.matrix(eset))
         {
             stop("The first argument should be an expression matrix.", immediate. = TRUE)
-            return(net)    
+            return(net)
         }
     }
     if(is.vector(genes)) genes <- as.matrix(genes)
-    if(!is.matrix(genes))         
+    if(!is.matrix(genes))
     {
         stop("The argument 'genes' should be a matrix or a vector.", immediate. = TRUE)
-        return(net)    
-    }
-    if(dim(genes)[1]>dim(eset)[1] || sum(which(dim(genes)==0)))
-    {   warning("The argument 'genes' can't be neither empty nor have more genes than the available.") 
         return(net)
     }
-    if(!is.numeric(lp)) 
+    if(dim(genes)[1]>dim(eset)[1] || sum(which(dim(genes)==0)))
+    {   warning("The argument 'genes' can't be neither empty nor have more genes than the available.")
+        return(net)
+    }
+    if(!is.numeric(lp))
     {
         stop("The argument 'lp' should be numeric.", immediate. = TRUE)
-        return(net)    
+        return(net)
     }
     if (sum(lp!=0)==0) return(net)
     if(dim(genes)[2]!=length(lp))
     {
         stop("The dimensions of the given genes and lp don't match.", immediate. = TRUE)
-        return(net)   
+        return(net)
     }
     if(sum(lp>dim(genes)[1])>0)
     {
         warning("The number of genes in lp is bigger than the available genes.", immediate. = TRUE)
-        lp[1:length(lp)] <- dim(genes)[1] 
+        lp[1:length(lp)] <- dim(genes)[1]
     }
-    
+
     # Calculo de la correlacion
     ensg<-c()
     classes <- c()
     for(i in 1:length(lp)){
-      if(lp[i]!=0) 
+      if(lp[i]!=0)
       {
         ensg <- c(ensg, genes[1:lp[i],i])
         classes <- c(classes, rep(names(lp[i]), times=lp[i]))
@@ -467,7 +471,7 @@ correlation.net <- function(eset, genes, lp, method="pearson", threshold=0.8)
     }
     datos <- eset[as.vector(ensg),]
     names(classes) <- as.character(ensg)
-  
+
     pearsoncor <- cor(t(datos), method=method)
     tmp <- which(pearsoncor > threshold, arr.ind=TRUE)
     tmp <- tmp[which(tmp[,1] < tmp[,2]),,drop=FALSE] #Eliminamos los redundantes porque la matriz es simetrica
@@ -482,14 +486,14 @@ correlation.net <- function(eset, genes, lp, method="pearson", threshold=0.8)
 remove.redundancy <- function(eset, genes, lp, net, relation=NULL)
 {
     #Comprobacion de parametros
-    if(is(eset, "ExpressionSet")) eset <- exprs(eset) else if (!is.matrix(eset))      stop("The first argument should be an expression matrix or an expressionset.")    
-    if(is.vector(genes)) genes <- as.matrix(genes)    
+    if(is(eset, "ExpressionSet")) eset <- exprs(eset) else if (!is.matrix(eset))      stop("The first argument should be an expression matrix or an expressionset.")
+    if(is.vector(genes)) genes <- as.matrix(genes)
     if(!is.matrix(genes))     stop("The argument 'genes' should be a matrix.")
     if(!is.numeric(lp))     stop("The argument 'lp' should be numeric.")
             if(dim(genes)[2]!=length(lp)){warning("The dimensions of the given genes and lp don't match.", immediate. = TRUE)
                                 return(net)    }
-    if(!class(net) == "GenesNetwork" && !is.list(net)) stop("The argument 'net' should be the GenesNetwork or a list of GenesNetwork returned by correlation.net or interaction.net.")    
-    #if (is.matrix(net) && (sum(colnames(net) %in% c("gene1", "class1", "gene2", "class2", "relation", "value")) !=6 ))     stop("The argument 'net' should be the matrix or a list of matrixes returned by correlation.net or interaction.net.")    
+    if(!class(net) == "GenesNetwork" && !is.list(net)) stop("The argument 'net' should be the GenesNetwork or a list of GenesNetwork returned by correlation.net or interaction.net.")
+    #if (is.matrix(net) && (sum(colnames(net) %in% c("gene1", "class1", "gene2", "class2", "relation", "value")) !=6 ))     stop("The argument 'net' should be the matrix or a list of matrixes returned by correlation.net or interaction.net.")
     if (is.list(net)&!is.null(net))
     {
         netList<- net
@@ -500,8 +504,8 @@ remove.redundancy <- function(eset, genes, lp, net, relation=NULL)
             if(!is.null(netList[[cl]]))
             {
                 subnet <- netList[[cl]]@edges
-                if(!is.matrix(subnet) || (sum(!colnames(subnet) %in% c("gene1", "class1", "gene2", "class2", "relation", "value")) >0 ) )     stop("The argument 'net' should be the GenesNetwork or a list of GenesNetwork returned by correlation.net or interaction.net.")        
-                if(sum(colnames(subnet) %in% c("class1", "class2")) ==0)  
+                if(!is.matrix(subnet) || (sum(!colnames(subnet) %in% c("gene1", "class1", "gene2", "class2", "relation", "value")) >0 ) )     stop("The argument 'net' should be the GenesNetwork or a list of GenesNetwork returned by correlation.net or interaction.net.")
+                if(sum(colnames(subnet) %in% c("class1", "class2")) ==0)
                 {
                     classNameRep <- rep(names(netList)[i],dim(subnet)[1])
                     subnet<- cbind(subnet, class1=classNameRep, class2=classNameRep)
@@ -514,36 +518,36 @@ remove.redundancy <- function(eset, genes, lp, net, relation=NULL)
         if(is.null(net)) { return(net) }
         net <- net@edges
     }
-    
+
     #Filter matrix to remove only the relation requested
     if (!is.null(relation))
     {
         if (relation != "Correlation - pearson" && relation != "Interaction - clr") warning ("The relation was not recognized. Check if the results were what you expected.", immediate=TRUE)
-        net <- net[which(net[,"relation"]==relation),]            
+        net <- net[which(net[,"relation"]==relation),]
     }
-                                                    
+
     #Calculos
     nonRedundantGenes <- list()
     removedGenes <- list()
-        
+
     for( j in 1:length(lp))
     {
-        tmp <- genes[1:lp[j],j]   
+        tmp <- genes[1:lp[j],j]
         tmp <- tmp[which(tmp!="NA")]
         i <- 1
         while(i<length(tmp))     # No cambiar por for, length(tmp) cambia en el bucle
-        {                        
-          if (tmp[i] %in% net[,c("gene1","gene2")]) 
+        {
+          if (tmp[i] %in% net[,c("gene1","gene2")])
           {
             ind <- which(net[,c("gene1","gene2"), drop=FALSE]==tmp[i] & net[,"class1"]==names(lp[j]) & net[,"class2"]==names(lp[j]), arr.ind=TRUE) # drop=FALSE added. check it works!
             redundant <- unique(c(tmp[i], as.vector(net[ind[,1],c("gene1","gene2")])))[-1]
             if( length(which(tmp %in% redundant)) != 0)
             {
               tmp <- tmp[-which(tmp %in% redundant)]
-              removedGenes[[names(lp[j])]] <- unique(c(removedGenes[[names(lp[j])]], redundant)) 
+              removedGenes[[names(lp[j])]] <- unique(c(removedGenes[[names(lp[j])]], redundant))
             }
           }
-          i <- i+1 
+          i <- i+1
         }
         nonRedundantGenes[[names(lp[j])]] <- tmp
     }
@@ -574,10 +578,10 @@ plotGeNetClassifierReturn <- function( geNetClassifierReturn, fileName=NULL, lpT
             {
                 dev.off()
             }
-        }        
+        }
 
         ####### NETWORK plot
-        if(("genesNetwork" %in% names(geNetClassifierReturn)) && length(geNetClassifierReturn@genesNetwork)) if ("igraph" %in% rownames(installed.packages()))  
+        if(("genesNetwork" %in% names(geNetClassifierReturn)) && length(geNetClassifierReturn@genesNetwork)) if ("igraph" %in% rownames(installed.packages()))
         {
                 # Extract requested network
                 topGenes <- getRanking(getTopRanking(geNetClassifierReturn@genesRanking, numGenesClass=numGenesNetworkPlot), showGeneID=TRUE, showGeneLabels=FALSE)$geneID
@@ -594,17 +598,17 @@ plotGeNetClassifierReturn <- function( geNetClassifierReturn, fileName=NULL, lpT
                 }
                 plotNetwork(genesNetwork=netTopGenes,  classificationGenes=geNetClassifierReturn@classificationGenes, genesRanking=getTopRanking(geNetClassifierReturn@genesRanking, numGenesNetworkPlot), plotAllNodesNetwork=TRUE, plotOnlyConnectedNodesNetwork=plotOnlyConnectedNodesNetwork,  plotClassifcationGenesNetwork=FALSE, genesInfo=NULL, geneLabels=geneLabels, returniGraphs=FALSE, plotType=plotType, labelSize=0.3, fileName=nwFileName, verbose=FALSE)
         }
-            
+
         ####### DISCRIMINANT POWER plot
-        if (is.null(fileName)) 
+        if (is.null(fileName))
         {
             dpFileName<- NULL
             x11()
         }
         else dpFileName <- paste(fileName,"_discriminantPower.pdf",sep="")
-        
+
         if(("classifier" %in% names(geNetClassifierReturn)) && length(geNetClassifierReturn@classifier)) plotDiscriminantPower(geNetClassifierReturn@classifier, classificationGenes=geNetClassifierReturn@classificationGenes, fileName=dpFileName, returnTable=FALSE, verbose=FALSE)
-                
+
         if (verbose && !is.null(fileName)) { message(paste("The plots were saved in ",getwd()," with the prefix '",fileName,"'.",sep="")); flush.console()}
 }
 
@@ -614,19 +618,19 @@ plotGeNetClassifierReturn <- function( geNetClassifierReturn, fileName=NULL, lpT
     # if (!is.null(fileName))
     # {
         # dev.off()
-        # if (verbose){ message(paste("The SV plot was saved as ",getwd(),"/",fileName," (PDF file)",sep="")); flush.console()} 
-    # }        
+        # if (verbose){ message(paste("The SV plot was saved as ",getwd(),"/",fileName," (PDF file)",sep="")); flush.console()}
+    # }
 configurePlotOutput <- function(nGenes, fileName=NULL)
 {
-    
-    if (!is.null(fileName))    
+
+    if (!is.null(fileName))
     {
         if(!is.character(fileName)) stop("The file name is not valid.")
         pdf(fileName)
     }else
     {
         if(nGenes>20)
-        { 
+        {
             nGenes <- 20
             #    warning(paste("Up to ",nGenes," genes will be shown. To plot more genes specify a PDF output file name.",sep=""))
         }
@@ -638,9 +642,9 @@ configurePlotOutput <- function(nGenes, fileName=NULL)
             else if (nGenes <= 10) rows <- 2
             else if (nGenes <= 15 || nGenes == 18) rows <- 3
             else rows <- 4
-            
+
             cols <-ceiling(nGenes/rows)
-            
+
             # Split plot window:
             par(mfcol=c(rows,cols))
         }
@@ -670,7 +674,7 @@ queryResultCheck <- function(queryResult)
     if(length(queryResult)>2)
     {
         globalQueryResult <- c(queryResult[1], queryResult[2])
-        
+
         numQueryResults <- length(queryResult)/2
         for (i in 2:numQueryResults)
         {
@@ -681,7 +685,7 @@ queryResultCheck <- function(queryResult)
                 warning("The classes of the predictors don't match.", immediate. = TRUE)
                 return (list(stats=NULL, countNotAssigned=NULL,statsLegend=NULL))
             }
-            else 
+            else
             {
                 if (sum(rownames(globalQueryResult$probabilities) != rownames(queryResult[i*2]$probabilities))!=0) #Si las dimensiones son distintas da error
                 {
@@ -689,16 +693,16 @@ queryResultCheck <- function(queryResult)
                     return (list(stats=NULL, countNotAssigned=NULL,statsLegend=NULL))
                 }
             }
-            
+
                 # Unir las clases (puede que los niveles no coincidan si solo se hayan asignado algunas clases en cada resultado concreto)
             globalNames<- names(globalQueryResult$class)
             globalQueryResult$class <- factor(c(as.character(globalQueryResult$class),as.character(queryResult[(i*2)-1]$class)))
             names(globalQueryResult$class) <- c(globalNames, names(queryResult[(i*2)-1]$class))
-            
+
             # Unir las probabilidades
             globalQueryResult$probabilities <- cbind(globalQueryResult$probabilities,queryResult[i*2]$probabilities)
-        }        
-    }                                
+        }
+    }
 
     return(globalQueryResult)
 }
@@ -708,19 +712,19 @@ queryResultCheck <- function(queryResult)
 assignment.conditions <- function(prob, minProb, minDiff)
 {
     if(length(prob)==2) minProb <- 0
-    
+
     ord <- order(prob,decreasing=TRUE)
     ret <- names(prob)[ord[1]]
 
     if(prob[ord[1]]-prob[ord[2]]<=minDiff)
     {
-            ret <- "NotAssigned"                                
-    }   
+            ret <- "NotAssigned"
+    }
     if(prob[ord[1]]<=minProb)
     {
         ret <- "NotAssigned"
     }
-    
+
     return(ret)
 }
 
@@ -728,18 +732,18 @@ assignment.conditions <- function(prob, minProb, minDiff)
 SV.dif <- function(classifier, gene, originalGeneNames=NULL, correctedAlpha=FALSE)
 {
     numClasses <- length(classifier$levels)
-    
-    if(!gene %in% colnames(classifier$SV))   
+
+    if(!gene %in% colnames(classifier$SV))
     {
         m <- matrix(0)    #Transformed into dataframe colnames to make sure they match the $SV
         colnames(m) <- gene
         m <- data.frame(m)
-        #gene <- gsub("^X","",colnames(data.frame(m)))   
-        
+        #gene <- gsub("^X","",colnames(data.frame(m)))
+
         colnames(classifier$SV)[which(colnames(classifier$SV)%in% colnames(m))] <- gene
         #colnames(classifier$SV)<-  gsub("^X","",colnames(classifier$SV))    #If the genenames start by number -->DataFrame adds an X to the name
     }
-    
+
     # same number of elements in plot as the number of support vectors, nrow=max(classifier$nSV)
     tmp <- matrix(ncol=numClasses, nrow=max(classifier$nSV))
     colnames(tmp) <- classifier$levels
@@ -749,7 +753,7 @@ SV.dif <- function(classifier, gene, originalGeneNames=NULL, correctedAlpha=FALS
     {
         alpha <- apply(classifier$coefs,1,function(x)sum(abs(x)))
         mult <- classifier$SV[,gene]*alpha
-    }else 
+    }else
     {
         mult <- classifier$SV
     }
@@ -760,16 +764,16 @@ SV.dif <- function(classifier, gene, originalGeneNames=NULL, correctedAlpha=FALS
         # mult para los SV de la clase. Rellenado con la media en las clases que tienen menos.
         if(correctedAlpha)
         {
-          tmp[,i] <- mean(mult[ind:(ind+classifier$nSV[i]-1)])          
+          tmp[,i] <- mean(mult[ind:(ind+classifier$nSV[i]-1)])
           tmp[1:classifier$nSV[i],i] <- mult[ind:(ind+classifier$nSV[i]-1)]
-        } else 
+        } else
         {
-          tmp[,i] <- mean(mult[ind:(ind+classifier$nSV[i]-1),gene]) 
+          tmp[,i] <- mean(mult[ind:(ind+classifier$nSV[i]-1),gene])
           tmp[1:classifier$nSV[i],i] <- mult[ind:(ind+classifier$nSV[i]-1),gene]
         }
         ind <- ind+classifier$nSV[i]
     }
-    
+
     # Separate negative/positive
     neg <- tmp
     pos <- tmp
@@ -784,20 +788,20 @@ SV.dif <- function(classifier, gene, originalGeneNames=NULL, correctedAlpha=FALS
     maxim <- which(sum_pos == max(sum_pos), arr.ind=TRUE)[1]
     sum_neg <- apply(neg,2,sum)
     minim <- which(sum_neg == min(sum_neg), arr.ind=TRUE)[1]
-    
+
     # up regulated
     if (max(sum_pos[-maxim]) != 0){         sig <- max(sum_pos[-maxim])     #Si el siguiente valor no es cero
     }else                                     sig <- max(sum_neg[-maxim])        #Si no hay mas "positivas" se busca la negativa
     up_reg <- max(sum_pos)-sig
-    
+
     # down regulated
     if (min(sum_neg[-minim]) !=0){             sig <- min(sum_neg[-minim])
-    }else                                     sig <- min(sum_pos[-minim]) 
+    }else                                     sig <- min(sum_pos[-minim])
     dw_reg <- min(sum_neg)-sig
 
     if(numClasses>2)
     {
-        # Choose biggest absolute value (The most diferent class' DP) 
+        # Choose biggest absolute value (The most diferent class' DP)
         if(up_reg < abs(dw_reg)){     discriminantPower <- dw_reg
         }else                                         discriminantPower <- up_reg
     }else
@@ -806,10 +810,10 @@ SV.dif <- function(classifier, gene, originalGeneNames=NULL, correctedAlpha=FALS
         if(up_reg > abs(dw_reg)){     discriminantPower <- dw_reg
         }else                                         discriminantPower <- up_reg
     }
-    
+
     # Find save the class for wich it was calculated
     dpClass <- classifier$levels[ifelse(discriminantPower>0,which(sum_pos == max(sum_pos)),which(sum_neg == min(sum_neg)))]
-    
+
     ret<- list(discriminantPower=discriminantPower, discrPwClass=dpClass ,positive=pos, negative=neg)
     return(ret)
 }
@@ -817,7 +821,7 @@ SV.dif <- function(classifier, gene, originalGeneNames=NULL, correctedAlpha=FALS
 
 # Checks the given annotation format and extracts the desired gene names from it
 # Returns: Vector (name=geneID, content=geneShowName), or NULL
-# genesAnnotation: Data frame or matrix containing the expressionSet "geneID" as first column or rowname, and the desired "geneName" (symbol) to show in plots and tables 
+# genesAnnotation: Data frame or matrix containing the expressionSet "geneID" as first column or rowname, and the desired "geneName" (symbol) to show in plots and tables
 #
 extractGeneLabels <- function(genesAnnotation, geneList=NULL)
 {
@@ -834,20 +838,20 @@ extractGeneLabels <- function(genesAnnotation, geneList=NULL)
             if(dim(genesAnnotation)[2]>1)
             {
                 if(!any(rownames(genesAnnotation)!=genesAnnotation[,1]))  genesAnnotation <- as.matrix(genesAnnotation[,2])        # The rows are named and the first column contain the geneID
-                if(is.null(rownames(genesAnnotation))) 
+                if(is.null(rownames(genesAnnotation)))
                 {
                     rownames(genesAnnotation) <- genesAnnotation[,1]    # First column assumed to contain the geneID
                     genesAnnotation <- as.matrix(genesAnnotation[,2])    # Second column assumed to contain the gene show name (symbol)
-                } 
+                }
             }
-        }else 
+        }else
         {
             if (is.factor(genesAnnotation) || is.character(genesAnnotation))
-            {    
+            {
                 if(length(genesAnnotation) > 0) genesAnnotation <- as.matrix(genesAnnotation) # Transform into matrix
             }else stop("The genesAnnotation should be either a matrix, a dataframe or a vector.")
         }
-        
+
         if(!is.null(geneList))
         {
             missingGenes <- !geneList %in% rownames(genesAnnotation)
@@ -860,8 +864,8 @@ extractGeneLabels <- function(genesAnnotation, geneList=NULL)
                 warning("Some of the given gene IDs are not available in the genes Annotation. Their alias will not be shown.", immediate.=TRUE)
             }
         }else { geneList <- rownames(genesAnnotation) }
-            
-        if(!is.null(rownames(genesAnnotation))) 
+
+        if(!is.null(rownames(genesAnnotation)))
         {
             ret <- as.character(genesAnnotation[geneList,]) # Returns vector
             names(ret) <- geneList
@@ -877,7 +881,7 @@ extractGeneLabels <- function(genesAnnotation, geneList=NULL)
             numClasses <- ncol(numGenesClass)
 
             pdf(plotsName)
-    
+
             # buildClassifier=TRUE
             if(!is.null(numGenesTPglobal))
             {
@@ -885,12 +889,12 @@ extractGeneLabels <- function(genesAnnotation, geneList=NULL)
                 # Plot of errorNumGenes (all in one)
                 if((length(numGenesTPglobal)>3 && length(numGenesTPglobal)<10) && library(RColorBrewer,logical.return=TRUE))
                 {
-                    colores<- brewer.pal(length(numGenesTPglobal),"Dark2")    
+                    colores<- brewer.pal(length(numGenesTPglobal),"Dark2")
                 }else colores <- rainbow(length(numGenesTPglobal))
                 maxError <- round(1-min(sapply(numGenesTPglobal, function(x){min(x[,numClasses+1])})), 1)
                 maxGenes <- ceiling(max(sapply(numGenesTPglobal, function(x){max(apply(x[,1:numClasses, drop=FALSE],1,sum))}))/20)*20
                 numGenesTPglobal <- lapply(numGenesTPglobal, function(x)  { cbind(x, totalGenes=apply(x[,1:numClasses,drop=FALSE],1,sum), error=1-x[,numClasses+1])})
-            
+
                 plot.new( )
                 plot.window(xlim=c(0, maxGenes), ylim=c(0,maxError))
                 title( main="Gene-selection iterations",  xlab="Total number of genes", ylab="Error rate") #sub="(Error  vs Total gene number)",
@@ -902,21 +906,21 @@ extractGeneLabels <- function(genesAnnotation, geneList=NULL)
                     #maxError <- max(errorNumGenes[,"error"])
                     minError <- which(errorNumGenes == min(errorNumGenes[,"error"]), arr.ind=TRUE)
                     lines(errorNumGenes, type="l", col=colores[iter], lwd=2)
-                    points(errorNumGenes[minError[1],1], errorNumGenes[minError[1],2], type="b", pch=16, col=colores[iter]) 
+                    points(errorNumGenes[minError[1],1], errorNumGenes[minError[1],2], type="b", pch=16, col=colores[iter])
                     text(maxGenes*0.60,maxError-(iter*(maxError*0.05)), paste("Error ",round(errorNumGenes[minError[1],2],2), ": ",errorNumGenes[minError[1],1]," genes",sep=""), col=colores[iter], pos=4)
-                }    
-                
+                }
+
                 ######
                 # Gene selection (barplot) # Classifier
                 barplot(numGenesClass, beside=TRUE, main="Number of genes selected in each iteration", density=50, col=colores, sub=paste("Total number of selected genes: ", sum(numTrainGenes["Classifier",])), ylim=c(0, max(numGenesClass)), border=colores, xlab="Classes", ylab="Number of genes")
 
                 numTrainGenesPlot <-numGenesClass
                 for(cl in 1:dim(numTrainGenes)[2])
-                {            
+                {
                     numTrainGenesPlot[-which(numTrainGenesPlot[,cl] == numTrainGenes["Classifier",cl])[1],cl]<- 0
                 }
                 barplot(numTrainGenesPlot, beside=TRUE,add=TRUE, col=colores, border=colores)
-                
+
                 ######
                 # Plot max genes recorridos
                 maxGenesChecked <- NULL
@@ -926,7 +930,7 @@ extractGeneLabels <- function(genesAnnotation, geneList=NULL)
                 barplot(maxGenesChecked, beside=TRUE, main="Total number of genes explored in each iteration", col=colores, density=50, xlab="Classes", ylab="Number of genes")
                 barplot(numGenesClass, beside=TRUE,add=TRUE, col=colores)
             }
-            
+
             # GeneralizationError
             if(!is.null(numGenesClassGE) && plotCVgE)
             {
@@ -935,38 +939,38 @@ extractGeneLabels <- function(genesAnnotation, geneList=NULL)
                 nIters <- dim(numGenesClassGE[[1]])[1]
                 if((length(numGenesClassGE)==5) && library(RColorBrewer,logical.return=TRUE))
                 {
-                    colores<- brewer.pal(9,"Purples")[-c(1,2,3,9)]    
+                    colores<- brewer.pal(9,"Purples")[-c(1,2,3,9)]
                 }else colores <- rainbow(length(numGenesClassGE))
-                
-                numGenesClassGEbinded <-NULL 
+
+                numGenesClassGEbinded <-NULL
                 for(i in 1:5) numGenesClassGEbinded<-rbind(numGenesClassGEbinded, numGenesClassGE[[i]]) # 5 = GE loops
                 colsCV <- NULL
                 for(colCVIter in colores) colsCV<-c(colsCV, rep(colCVIter, nIters))
-                
-                maxY <- ifelse(is.null(numGenesTPglobal), max(numGenesClassGEbinded), max(max(numGenesClassGEbinded), max(numGenesClass))) # Misma escala 
+
+                maxY <- ifelse(is.null(numGenesTPglobal), max(numGenesClassGEbinded), max(max(numGenesClassGEbinded), max(numGenesClass))) # Misma escala
                 barplot(numGenesClassGEbinded, beside=TRUE, main="Genes selected in the 5-fold CV for Generalization Error", density=50, col=colsCV, ylim=c(0, maxY), border=colsCV, xlab="Classes", ylab="Number of genes")
 
                 # Selected genes
                 numTrainGenesPlot <-numGenesClassGEbinded
                 ind <- 0
                 indexes <- NULL
-                for(iter in 1:5) 
+                for(iter in 1:5)
                 {
                     indexes <- rbind(indexes, cbind(rep(0, numClasses), 1:numClasses))
                     for(cl in 1:numClasses)
-                    {            
+                    {
                         indexes[(iter-1)*numClasses+cl, 1] <- ind + which(numTrainGenesPlot[(ind+1):(ind+nIters), cl] == numTrainGenes[iter,cl])[1]
                     }
                     ind <- ind+nIters
                 }
-                
+
                 # Hacer 0...
-                temp <- matrix(nrow=nrow(numTrainGenesPlot), ncol=ncol(numTrainGenesPlot), data=0) 
+                temp <- matrix(nrow=nrow(numTrainGenesPlot), ncol=ncol(numTrainGenesPlot), data=0)
                 temp[indexes] <- numTrainGenesPlot[indexes]
                 numTrainGenesPlot <- temp
-                
+
                 barplot(numTrainGenesPlot, beside=TRUE,add=TRUE, col=colsCV, border=colsCV)
             }
-            
+
             dev.off()
         }
