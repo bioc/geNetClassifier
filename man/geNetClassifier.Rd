@@ -151,11 +151,11 @@ http://CRAN.R-project.org/package=e1071\cr
 Patrick E. Meyer, Frederic Lafitte and Gianluca Bontempi (2008). MINET: An open source R/Bioconductor Package for Mutual Information based Network Inference. BMC Bioinformatics.\cr
 http://www.biomedcentral.com/1471-2105/9/461\cr
 \cr
-\code{\link{RColorBrewer}} (\code{brewer.pal}) for palettes in some of the plots.\cr
+\code{RColorBrewer} (\code{brewer.pal}) for palettes in some of the plots.\cr
   Erich Neuwirth (2011). RColorBrewer: ColorBrewer palettes. R package. \cr
   http://CRAN.R-project.org/package=RColorBrewer\cr
 \cr
-\code{\link{igraph}} for the graphical representation of the networks.\cr
+\code{igraph} for the graphical representation of the networks.\cr
   Csardi G, Nepusz T: The igraph software package for complex network research, InterJournal, Complex Systems 1695. 2006. http://igraph.sf.net\cr
 }
 

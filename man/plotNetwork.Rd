@@ -71,7 +71,7 @@ Logical. If TRUE, messages indicating the execution progress will be shown.
 }
 \value{
   \item{Graph list}{
-	List with the plotted \code{\link{igraph}} objects.
+	List with the plotted \code{igraph} objects.
 	}
   \item{Network plots}{
 	Shown throught the standard output devide or saved in the working directory as 'fileName.pdf' if \code{fileName} was provided.
@@ -81,7 +81,7 @@ Logical. If TRUE, messages indicating the execution progress will be shown.
 Main package function and classifier training:
 \code{\link[geNetClassifier:geNetClassifier]{geNetClassifier}}\cr
 
-Package \code{\link{igraph}}
+Package \code{igraph}
 }
 \author{
 Bioinformatics and Functional Genomics Group. Centro de Investigacion del Cancer (CIC-IBMCC, USAL-CSIC). Salamanca. Spain
