@@ -79,15 +79,16 @@ The algorithm \textit{geNetClassifier()} integrates several existing machine lea
 \label{sec:installation}
 To install \textit{geNetClassifier} from \textit{Bioconductor}:
 <<eval=FALSE>>=
-source("http://bioconductor.org/biocLite.R")
-biocLite("geNetClassifier")
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install("geNetClassifier")
 @ 
 
 %The package requires the installation of other packages that are usually automatically installed with it using Bioconductor: \textit{Biobase}, \textit{BiocGenerics}, \textit{EBarrays}, \textit{lattice}, \textit{minet} and \textit{infotheo}. \textit{igraph} and \textit{RColorBrewer} are optional, but highly recommended in order to get full functionality of geNetClassifier, including the plots. 
 
 To follow the examples presented in this \textit{Vignette}, we also need to install a sample dataset called \textit{leukemiasEset}:
 <<eval=FALSE>>=
-biocLite("leukemiasEset")
+BiocManager::install("leukemiasEset")
 @
 
 This dataset contains an \textit{expresssionSet} built with 60 gene expression microarrays (HG-U133 plus 2.0 from \textit{Affymetrix}) hybridized with mRNA extracted from bone marrow biopsies of patients of the 4 major types of leukemia (ALL, AML, CLL and CML) and from non-leukemia controls (NoL). These data was produced by the Microarray Innovations in LEukemia (MILE) research project \cite{mile} and are available at GEO, under accession number GSE13159. The selected samples are labeled keeping their source GEO IDs.\\
