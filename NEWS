@@ -1,3 +1,7 @@
+CHANGES IN VERSION 1.27.1
+----------------------
+    o Minor update for R 4.0.
+    
 CHANGES IN VERSION 1.15.0
 ----------------------
     o Update for compatibility with new R versions. The confusion matrix is now an object of class 'table'.
