@@ -2,7 +2,7 @@ Package: geNetClassifier
 Type: Package
 Title: Classify diseases and build associated gene networks using gene
         expression profiles
-Version: 1.27.2
+Version: 1.27.3
 Date: 2019-12-28
 Author: Sara Aibar, Celia Fontanillo and Javier De Las Rivas.
         Bioinformatics and Functional Genomics Group. Cancer Research
@@ -21,4 +21,3 @@ Collate: class.GenesRanking.R class.GenesNetwork.R
         class.GeneralizationError.R class.GeNetClassifierReturn.R
         functions.private.R functions.public.R function.main.R
 biocViews: Classification, DifferentialExpression, Microarray
-PackageStatus: Deprecated
