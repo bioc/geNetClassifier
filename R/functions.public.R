@@ -1187,6 +1187,7 @@ plotDiscriminantPower <- function(classifier, classificationGenes=NULL , geneLab
 
 plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NULL, genesInfo=NULL,geneLabels=NULL, returniGraphs=FALSE, plotType="dynamic", fileName=NULL, plotAllNodesNetwork=TRUE, plotOnlyConnectedNodesNetwork=FALSE,  plotClassifcationGenesNetwork=FALSE, labelSize=0.5, vertexSize=NULL, width=NULL, height=NULL, verbose=TRUE)
 {
+  plotType <- plotType[1]
     layoutList <- NULL
     if(!library(igraph, logical.return=TRUE)) 
     {    

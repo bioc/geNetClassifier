@@ -557,59 +557,59 @@ remove.redundancy <- function(eset, genes, lp, net, relation=NULL)
 
 # Used in main. Also exported as plot() for class Global Return
 plotGeNetClassifierReturn <- function( geNetClassifierReturn, fileName=NULL, lpThreshold=0.95, numGenesLpPlot=1000, numGenesNetworkPlot=100, geneLabels=NULL, verbose=TRUE)
+{
+  if(class(geNetClassifierReturn) != "GeNetClassifierReturn") stop("")
+  if(!is.null(fileName) && !is.character(fileName))  stop("The plots name is not a valid name.")
+  if(!is.numeric(lpThreshold) || (lpThreshold>=1 || lpThreshold <0)) stop("Lp threshold should be a probability (a number between 0 and 1).")
+  if(!is.numeric(numGenesLpPlot)) stop("The number of genes to plot in the posterior probability plot should be a number .")
+  if(!is.numeric(numGenesNetworkPlot) || numGenesNetworkPlot< 2) stop("The number of genes to plot in the network should be a number higher than two.")
+  if(!is.logical(verbose)) verbose <- TRUE
+
+
+  ####### LP plot
+  if(("genesRanking" %in% names(geNetClassifierReturn)) && any(numGenes(geNetClassifierReturn@genesRanking)>0))
+  {
+    if(!is.null(fileName))
     {
-        if(class(geNetClassifierReturn) != "GeNetClassifierReturn") stop("")
-        if(!is.null(fileName) && !is.character(fileName))  stop("The plots name is not a valid name.")
-        if(!is.numeric(lpThreshold) || (lpThreshold>=1 || lpThreshold <0)) stop("Lp threshold should be a probability (a number between 0 and 1).")
-        if(!is.numeric(numGenesLpPlot)) stop("The number of genes to plot in the posterior probability plot should be a number .")
-        if(!is.numeric(numGenesNetworkPlot) || numGenesNetworkPlot< 2) stop("The number of genes to plot in the network should be a number higher than two.")
-        if(!is.logical(verbose)) verbose <- TRUE
+      pdf(paste(fileName,"_postProb.pdf",sep=""))
+    }
+    calculateGenesRanking(precalcGenesRanking = geNetClassifierReturn@genesRanking, lpThreshold=lpThreshold, numGenesPlot=numGenesLpPlot, plotLp=TRUE, returnRanking=FALSE, verbose=FALSE)
+    if(!is.null(fileName))
+    {
+      dev.off()
+    }
+  }
 
+  ####### NETWORK plot
+  if(("genesNetwork" %in% names(geNetClassifierReturn)) && length(geNetClassifierReturn@genesNetwork)) if ("igraph" %in% rownames(installed.packages()))
+  {
+    # Extract requested network
+    topGenes <- getRanking(getTopRanking(geNetClassifierReturn@genesRanking, numGenesClass=numGenesNetworkPlot), showGeneID=TRUE, showGeneLabels=FALSE)$geneID
+    netTopGenes <- getSubNetwork(geNetClassifierReturn@genesNetwork, topGenes, showWarnings=FALSE)
+    if(is.null(fileName))
+    {
+      plotType <-"dynamic"
+      nwFileName <- ""
+      plotOnlyConnectedNodesNetwork <- FALSE
+    }else{
+      plotType <-"pdf"
+      nwFileName <- paste(fileName,"_network_top",numGenesNetworkPlot,"Genes.pdf",sep="")
+      plotOnlyConnectedNodesNetwork <- TRUE
+    }
+    plotNetwork(genesNetwork=netTopGenes,  classificationGenes=geNetClassifierReturn@classificationGenes, genesRanking=getTopRanking(geNetClassifierReturn@genesRanking, numGenesNetworkPlot), plotAllNodesNetwork=TRUE, plotOnlyConnectedNodesNetwork=plotOnlyConnectedNodesNetwork,  plotClassifcationGenesNetwork=FALSE, genesInfo=NULL, geneLabels=geneLabels, returniGraphs=FALSE, plotType=plotType, labelSize=0.3, fileName=nwFileName, verbose=FALSE)
+  }
 
-        ####### LP plot
-        if(("genesRanking" %in% names(geNetClassifierReturn)) && numGenes(geNetClassifierReturn@genesRanking))
-        {
-            if(!is.null(fileName))
-            {
-                pdf(paste(fileName,"_postProb.pdf",sep=""))
-            }
-            calculateGenesRanking(precalcGenesRanking = geNetClassifierReturn@genesRanking, lpThreshold=lpThreshold, numGenesPlot=numGenesLpPlot, plotLp=TRUE, returnRanking=FALSE, verbose=FALSE)
-            if(!is.null(fileName))
-            {
-                dev.off()
-            }
-        }
+  ####### DISCRIMINANT POWER plot
+  if (is.null(fileName))
+  {
+    dpFileName<- NULL
+    x11()
+  }
+  else dpFileName <- paste(fileName,"_discriminantPower.pdf",sep="")
 
-        ####### NETWORK plot
-        if(("genesNetwork" %in% names(geNetClassifierReturn)) && length(geNetClassifierReturn@genesNetwork)) if ("igraph" %in% rownames(installed.packages()))
-        {
-                # Extract requested network
-                topGenes <- getRanking(getTopRanking(geNetClassifierReturn@genesRanking, numGenesClass=numGenesNetworkPlot), showGeneID=TRUE, showGeneLabels=FALSE)$geneID
-                netTopGenes <- getSubNetwork(geNetClassifierReturn@genesNetwork, topGenes, showWarnings=FALSE)
-                if(is.null(fileName))
-                {
-                    plotType <-"dynamic"
-                    nwFileName <- ""
-                    plotOnlyConnectedNodesNetwork <- FALSE
-                }else{
-                    plotType <-"pdf"
-                    nwFileName <- paste(fileName,"_network_top",numGenesNetworkPlot,"Genes.pdf",sep="")
-                    plotOnlyConnectedNodesNetwork <- TRUE
-                }
-                plotNetwork(genesNetwork=netTopGenes,  classificationGenes=geNetClassifierReturn@classificationGenes, genesRanking=getTopRanking(geNetClassifierReturn@genesRanking, numGenesNetworkPlot), plotAllNodesNetwork=TRUE, plotOnlyConnectedNodesNetwork=plotOnlyConnectedNodesNetwork,  plotClassifcationGenesNetwork=FALSE, genesInfo=NULL, geneLabels=geneLabels, returniGraphs=FALSE, plotType=plotType, labelSize=0.3, fileName=nwFileName, verbose=FALSE)
-        }
+  if(("classifier" %in% names(geNetClassifierReturn)) && length(geNetClassifierReturn@classifier)) plotDiscriminantPower(geNetClassifierReturn@classifier, classificationGenes=geNetClassifierReturn@classificationGenes, fileName=dpFileName, returnTable=FALSE, verbose=FALSE)
 
-        ####### DISCRIMINANT POWER plot
-        if (is.null(fileName))
-        {
-            dpFileName<- NULL
-            x11()
-        }
-        else dpFileName <- paste(fileName,"_discriminantPower.pdf",sep="")
-
-        if(("classifier" %in% names(geNetClassifierReturn)) && length(geNetClassifierReturn@classifier)) plotDiscriminantPower(geNetClassifierReturn@classifier, classificationGenes=geNetClassifierReturn@classificationGenes, fileName=dpFileName, returnTable=FALSE, verbose=FALSE)
-
-        if (verbose && !is.null(fileName)) { message(paste("The plots were saved in ",getwd()," with the prefix '",fileName,"'.",sep="")); flush.console()}
+  if (verbose && !is.null(fileName)) { message(paste("The plots were saved in ",getwd()," with the prefix '",fileName,"'.",sep="")); flush.console()}
 }
 
 # Opens the pdf file name, or, if null, divides the plot window for the appropiate number of plots
@@ -623,33 +623,33 @@ plotGeNetClassifierReturn <- function( geNetClassifierReturn, fileName=NULL, lpT
 configurePlotOutput <- function(nGenes, fileName=NULL)
 {
 
-    if (!is.null(fileName))
+  if (!is.null(fileName))
+  {
+    if(!is.character(fileName)) stop("The file name is not valid.")
+    pdf(fileName)
+  }else
+  {
+    if(nGenes>20)
     {
-        if(!is.character(fileName)) stop("The file name is not valid.")
-        pdf(fileName)
-    }else
-    {
-        if(nGenes>20)
-        {
-            nGenes <- 20
-            #    warning(paste("Up to ",nGenes," genes will be shown. To plot more genes specify a PDF output file name.",sep=""))
-        }
-        if(nGenes<=20)
-        {
-            #Columns and rows of the plot
-            if(nGenes == 4) rows <-2         # 2x2
-            else if (nGenes <= 5) rows <- 1
-            else if (nGenes <= 10) rows <- 2
-            else if (nGenes <= 15 || nGenes == 18) rows <- 3
-            else rows <- 4
-
-            cols <-ceiling(nGenes/rows)
-
-            # Split plot window:
-            par(mfcol=c(rows,cols))
-        }
+      nGenes <- 20
+      #    warning(paste("Up to ",nGenes," genes will be shown. To plot more genes specify a PDF output file name.",sep=""))
     }
-    return(nGenes)
+    if(nGenes<=20)
+    {
+      #Columns and rows of the plot
+      if(nGenes == 4) rows <-2         # 2x2
+      else if (nGenes <= 5) rows <- 1
+      else if (nGenes <= 10) rows <- 2
+      else if (nGenes <= 15 || nGenes == 18) rows <- 3
+      else rows <- 4
+
+      cols <-ceiling(nGenes/rows)
+
+      # Split plot window:
+      par(mfcol=c(rows,cols))
+    }
+  }
+  return(nGenes)
 }
 
 
@@ -658,74 +658,74 @@ configurePlotOutput <- function(nGenes, fileName=NULL)
 # globalQueryResult <- queryResultCheck(queryResult)
 queryResultCheck <- function(queryResult)
 {
-    if((!is.list(queryResult)) || (length(queryResult)<2)) stop('The argument should be the result from executing queryGeNetClassifier.')
-    else if (!is.factor(queryResult$class) || !is.matrix(queryResult$probabilities))  stop('The argument should be the result from executing queryGeNetClassifier.')
+  if((!is.list(queryResult)) || (length(queryResult)<2)) stop('The argument should be the result from executing queryGeNetClassifier.')
+  else if (!is.factor(queryResult$class) || !is.matrix(queryResult$probabilities))  stop('The argument should be the result from executing queryGeNetClassifier.')
 
-    # Eliminar los $call de la prediccion
-    temp<- queryResult
-    queryResult<- NULL
-    for(i in 1:length(temp))
+  # Eliminar los $call de la prediccion
+  temp<- queryResult
+  queryResult<- NULL
+  for(i in 1:length(temp))
+  {
+      if(is.null(temp[i]$call)) queryResult<- c(queryResult, temp[i])
+  }
+
+  # Concatenar
+  if(length(queryResult)==2) globalQueryResult <- queryResult
+  if(length(queryResult)>2)
+  {
+    globalQueryResult <- c(queryResult[1], queryResult[2])
+
+    numQueryResults <- length(queryResult)/2
+    for (i in 2:numQueryResults)
     {
-        if(is.null(temp[i]$call)) queryResult<- c(queryResult, temp[i])
-    }
-
-    # Concatenar
-    if(length(queryResult)==2) globalQueryResult <- queryResult
-    if(length(queryResult)>2)
-    {
-        globalQueryResult <- c(queryResult[1], queryResult[2])
-
-        numQueryResults <- length(queryResult)/2
-        for (i in 2:numQueryResults)
+      #Comprobar q coinciden etiquetas de probabilities
+      # Probabilities: Tienen q ser exactamente las mismas (en numero y orden)
+      if(dim(globalQueryResult$probabilities)[1] !=  dim(queryResult[i*2]$probabilities)[1])
+      {
+        warning("The classes of the predictors don't match.", immediate. = TRUE)
+        return (list(stats=NULL, countNotAssigned=NULL,statsLegend=NULL))
+      }
+      else
+      {
+        if (sum(rownames(globalQueryResult$probabilities) != rownames(queryResult[i*2]$probabilities))!=0) #Si las dimensiones son distintas da error
         {
-            #Comprobar q coinciden etiquetas de probabilities
-            # Probabilities: Tienen q ser exactamente las mismas (en numero y orden)
-            if(dim(globalQueryResult$probabilities)[1] !=  dim(queryResult[i*2]$probabilities)[1])
-            {
-                warning("The classes of the predictors don't match.", immediate. = TRUE)
-                return (list(stats=NULL, countNotAssigned=NULL,statsLegend=NULL))
-            }
-            else
-            {
-                if (sum(rownames(globalQueryResult$probabilities) != rownames(queryResult[i*2]$probabilities))!=0) #Si las dimensiones son distintas da error
-                {
-                    warning("The classes of the predictors don't match.", immediate. = TRUE)
-                    return (list(stats=NULL, countNotAssigned=NULL,statsLegend=NULL))
-                }
-            }
-
-                # Unir las clases (puede que los niveles no coincidan si solo se hayan asignado algunas clases en cada resultado concreto)
-            globalNames<- names(globalQueryResult$class)
-            globalQueryResult$class <- factor(c(as.character(globalQueryResult$class),as.character(queryResult[(i*2)-1]$class)))
-            names(globalQueryResult$class) <- c(globalNames, names(queryResult[(i*2)-1]$class))
-
-            # Unir las probabilidades
-            globalQueryResult$probabilities <- cbind(globalQueryResult$probabilities,queryResult[i*2]$probabilities)
+          warning("The classes of the predictors don't match.", immediate. = TRUE)
+          return (list(stats=NULL, countNotAssigned=NULL,statsLegend=NULL))
         }
-    }
+      }
 
-    return(globalQueryResult)
+      # Unir las clases (puede que los niveles no coincidan si solo se hayan asignado algunas clases en cada resultado concreto)
+      globalNames<- names(globalQueryResult$class)
+      globalQueryResult$class <- factor(c(as.character(globalQueryResult$class),as.character(queryResult[(i*2)-1]$class)))
+      names(globalQueryResult$class) <- c(globalNames, names(queryResult[(i*2)-1]$class))
+
+      # Unir las probabilidades
+      globalQueryResult$probabilities <- cbind(globalQueryResult$probabilities,queryResult[i*2]$probabilities)
+    }
+  }
+
+  return(globalQueryResult)
 }
 
 ## Establece los valores minimos de probabilidad de una muestra para que sea asignada a una determinada clase
 # Para 2 clases, requiere al menos un 75%
 assignment.conditions <- function(prob, minProb, minDiff)
 {
-    if(length(prob)==2) minProb <- 0
+  if(length(prob)==2) minProb <- 0
 
-    ord <- order(prob,decreasing=TRUE)
-    ret <- names(prob)[ord[1]]
+  ord <- order(prob,decreasing=TRUE)
+  ret <- names(prob)[ord[1]]
 
-    if(prob[ord[1]]-prob[ord[2]]<=minDiff)
-    {
-            ret <- "NotAssigned"
-    }
-    if(prob[ord[1]]<=minProb)
-    {
-        ret <- "NotAssigned"
-    }
+  if(prob[ord[1]]-prob[ord[2]]<=minDiff)
+  {
+    ret <- "NotAssigned"
+  }
+  if(prob[ord[1]]<=minProb)
+  {
+    ret <- "NotAssigned"
+  }
 
-    return(ret)
+  return(ret)
 }
 
 ## Calcula la diferencia para un gen entre la suma de los valores SV para la clase que diferencian y la siguiente clase mas cercana a ese valor (valor discriminante...)
