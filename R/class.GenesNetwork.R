@@ -228,8 +228,8 @@ setMethod("network2txt", signature="GenesNetwork", definition=function(network, 
     if(is.null(filePrefix)) filePrefix <- "genesNetwork"
     if(!is.null(nwClass) && !is.character(nwClass)) stop("nwClass should be of type character.")
     
-    write.table(getEdges(network), file=paste(filePrefix,"_edges_",nwClass,".txt", sep=""), sep="\t", row.names=FALSE)
-    write.table(getNodes(network), file=paste(filePrefix,"_nodes_",nwClass,".txt", sep=""), sep="\t", col.names=FALSE, row.names=FALSE)
+    utils::write.table(getEdges(network), file=paste(filePrefix,"_edges_",nwClass,".txt", sep=""), sep="\t", row.names=FALSE)
+    utils::write.table(getNodes(network), file=paste(filePrefix,"_nodes_",nwClass,".txt", sep=""), sep="\t", col.names=FALSE, row.names=FALSE)
 })
 
 setMethod("network2txt", signature="list", definition=function(network, filePrefix=NULL)

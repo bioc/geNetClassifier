@@ -165,7 +165,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     ifelse (buildClassifier, numCV.total <- numCV.extern + 1, numCV.total <- numCV.extern) # If buildClassifier and Calculate statistics : +1 loop
 
     # Filter data, calculate Posterior Probabilities and rank genes
-    if (verbose && is.null(precalcGenesRanking)){ message(paste(format(Sys.time(), "%H:%M:%S"),"- Filtering data and calculating the genes ranking...")); flush.console()}
+    if (verbose && is.null(precalcGenesRanking)){ message(paste(format(Sys.time(), "%H:%M:%S"),"- Filtering data and calculating the genes ranking...")); utils::flush.console()}
     esetFiltered <- eset[iqr.filter(eset,IQRfilterPercentage),]
     rm(eset)
     if(dim(esetFiltered)[1]< numClasses) stop(paste("Applying a filter percentage of ",IQRfilterPercentage," there are not enough genes left to perform the classiffication. Try with a lower filter percentage.",sep=""))
@@ -225,7 +225,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
     if (is.null(genesNetwork) && calculateNetwork)
     {
         # Calculate Correlations
-        if (verbose) { message(paste(format(Sys.time(), "%H:%M:%S"),"- Calculating correlations between genes...")) ; flush.console()}
+        if (verbose) { message(paste(format(Sys.time(), "%H:%M:%S"),"- Calculating correlations between genes...")) ; utils::flush.console()}
         for( cl in gClasses(genesRankingGlobal))
         {
             if(lpMaxGenes[cl] > 0)
@@ -240,7 +240,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
         # Calculate Interations (mutual information)
         if (!skipInteractions || removeInteractions)
         {
-            if (verbose) { message(paste(format(Sys.time(), "%H:%M:%S"),"- Calculating interactions between genes...")) ; flush.console()}
+            if (verbose) { message(paste(format(Sys.time(), "%H:%M:%S"),"- Calculating interactions between genes...")) ; utils::flush.console()}
             for( cl in 1:length(gClasses(genesRankingGlobal)))
             {
                 if(lpMaxGenes[cl] >0)   genesNetwork[[cl]]@edges <- rbind(genesNetwork[[cl]]@edges, interaction.net(esetFiltered, rankENSG[1:lpMaxGenes[cl],cl], lpMaxGenes[cl], method="clr", estimator="mi.empirical", threshold=interactionsThreshold))
@@ -309,7 +309,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
         numGenesClassGE <- NULL
         genesRankingLoops <- NULL
 
-        if (verbose) { message(paste(format(Sys.time(), "%H:%M:%S"),"- All required parameters have been calculated and checked. Building classifier...")); flush.console()}
+        if (verbose) { message(paste(format(Sys.time(), "%H:%M:%S"),"- All required parameters have been calculated and checked. Building classifier...")); utils::flush.console()}
 
         # External Cross Validation / Train Classifier
         for( i in 1:numCV.total)
@@ -487,7 +487,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
             # Max number of genes
             if(geneSelection=="max")    numTrainGenes[i,] <- apply(numGenesClass,2,function(x) max(x))
             if(geneSelection=="mean")    numTrainGenes[i,] <- apply(numGenesClass,2,function(x) round(mean(x)))
-            if(geneSelection=="maxSoutliers") numTrainGenes[i,]<-apply(numGenesClass, 2, function(x) max(x[which(x<=(mean(x)+(outlThreshold*sd(x))))]))
+            if(geneSelection=="maxSoutliers") numTrainGenes[i,]<-apply(numGenesClass, 2, function(x) max(x[which(x<=(mean(x)+(outlThreshold*stats::sd(x))))]))
 
             # Obtain the matrix of best genes
             numBestGenes <- max(max(lp), max(numTrainGenes[i,]))  # using lp for global Ranking
@@ -507,7 +507,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
                     nonRedundantBestTemp  <- bestGenes[which(bestGenes[,cl] %in% genesRedundancy$nonRedundantGenes[[cl]]), cl]
                     if(length(nonRedundantBestTemp)>0) nonRedundantBestGenes[1: length(nonRedundantBestTemp),cl] <- nonRedundantBestTemp
                 }
-                numNonRedundantBest <- apply(nonRedundantBestGenes, 2, function(x) length(na.omit(x)))
+                numNonRedundantBest <- apply(nonRedundantBestGenes, 2, function(x) length(stats::na.omit(x)))
                 bestGenes <-  nonRedundantBestGenes
                     if (!is.matrix(bestGenes)) bestGenes <- cbind(NULL,bestGenes)
                     if(is.null(colnames(bestGenes))&& numClasses ==2) colnames(bestGenes) <- colnames(numTrainGenes)
@@ -566,7 +566,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
                     mxcfi <- table(testLabels, prediction)[1:numClasses,]
                     mxcf <- mxcf + mxcfi
 
-                    if (verbose) { message(paste(format(Sys.time(), "%H:%M:%S")," - ",i," out of " ,ifelse(buildClassifier,numCV.total-1,numCV.total)," cross-validation loops finished.", sep="")); flush.console()}
+                    if (verbose) { message(paste(format(Sys.time(), "%H:%M:%S")," - ",i," out of " ,ifelse(buildClassifier,numCV.total-1,numCV.total)," cross-validation loops finished.", sep="")); utils::flush.console()}
             }
         }
         if(!is.null(showWarningMaxGenes))
@@ -631,12 +631,12 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
             {
                 geneRank <- as.integer(allGenesClass[which(allGenesClass[,1]==gene),2])
                 classTable[gene,"chosenRankMean"] <- round(mean(geneRank),2)
-                if(classTable[gene,"timesChosen"]>1) classTable[gene,"chosenRankSD"] <- round(sd(geneRank),2)
+                if(classTable[gene,"timesChosen"]>1) classTable[gene,"chosenRankSD"] <- round(stats::sd(geneRank),2)
                 else classTable[gene,"chosenRankSD"] <- 0
 
                 geneRanks <- sapply(allGenesDetails[1:numCV.extern], function(x) x[[cl]][gene,"ranking"])
                 classTable[gene,"gERankMean"] <- round(mean(geneRanks, na.rm=TRUE),2)
-                classTable[gene,"gERankSD"] <- round(sd(geneRanks, na.rm=TRUE),2)
+                classTable[gene,"gERankSD"] <- round(stats::sd(geneRanks, na.rm=TRUE),2)
             }
             classTable <- classTable[order(-classTable[,"timesChosen"], classTable[,"gERankMean"]),, drop=FALSE]
 
@@ -831,7 +831,7 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
                 nonRedundantBestGenes <- matrix(ncol=length(names(genesRedundancy$nonRedundantGenes)), nrow=max(sapply(genesRedundancy$nonRedundantGenes, length)))
                 for( nr in 1:length(genesRedundancy$nonRedundantGenes))nonRedundantBestGenes[1:length(genesRedundancy$nonRedundantGenes[[nr]]),nr] <- genesRedundancy$nonRedundantGenes[[nr]]
                 colnames(nonRedundantBestGenes) <- names(genesRedundancy$nonRedundantGenes)
-                numNonRedundantBest <- apply(nonRedundantBestGenes, 2, function(x) length(na.omit(x)))
+                numNonRedundantBest <- apply(nonRedundantBestGenes, 2, function(x) length(stats::na.omit(x)))
             }
             # All non redundant genes are over lpThreshold (requirement in calculation)
             newOrd <- matrix(nrow=max(numNonRedundantBest) , ncol=ncol(genesRankingGlobal@ord) )
@@ -878,9 +878,9 @@ geNetClassifier <- function(eset, sampleLabels, plotsName=NULL, buildClassifier=
             plotAssignments(queryResult=globalResults, realLabels=sampleLabels, minProbAssignCoeff=minProbAssignCoeff, minDiffAssignCoeff=minDiffAssignCoeff)
             dev.off()
         }
-        if (verbose) { message(paste("The plots were saved in ",getwd()," with the prefix '",plotsName,"'.",sep="")); flush.console()}
+        if (verbose) { message(paste("The plots were saved in ",getwd()," with the prefix '",plotsName,"'.",sep="")); utils::flush.console()}
     }
 
-    flush.console()
+    utils::flush.console()
     return(geNetClassifierReturn)
 }

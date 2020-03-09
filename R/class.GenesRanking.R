@@ -347,7 +347,7 @@ setClass(Class="GenesRanking",
         if(!is.matrix(genes)) stop("The genes should be in a matrix, ordered by class.")
         if(any(!colnames(genes) %in% gClasses(object))) stop("The genes matrix classes, do not match the genesRanking.")
         genes <- genes [, gClasses(object), drop=FALSE]
-        geneList <- as.vector(na.omit(as.vector(genes)))
+        geneList <- as.vector(stats::na.omit(as.vector(genes)))
         if(any(!geneList %in% rownames(object@postProb))) stop("The requested genes are not in the genesRanking.")
         
         newPostProb <- object@postProb[geneList, , drop=FALSE]
@@ -364,7 +364,7 @@ setClass(Class="GenesRanking",
             }
         }
 
-        newNGenesClass <- apply(newOrd, 2, function(x) length(na.omit(x)))
+        newNGenesClass <- apply(newOrd, 2, function(x) length(stats::na.omit(x)))
         
         ret <- new("GenesRanking",  postProb=newPostProb, numGenesClass=newNGenesClass, ord=newOrd)
         if(nrow(object@meanDif) > 0) meanDif <- object@meanDif[geneList,,drop=FALSE]  else meanDif <- object@meanDif

@@ -60,12 +60,12 @@ queryGeNetClassifier <- function(classifier, eset,    minProbAssignCoeff=1, minD
     if(length(classifier$levels)>2) { minProb <- 2*rand * minProbAssignCoeff
     }else {minProb <- 0}
     minDiff <- rand * minDiffAssignCoeff
-    if(verbose) { message(paste("Coefficients for assignment: Minimum Probability to be assigned = ",round(minProb,2), ifelse(minProbAssignCoeff==1, "(default)",""),".\n Minimum difference between the probabilities of first and second most likely classes  = ", round(minDiff,2),ifelse(minDiffAssignCoeff==1, "(default)",""), sep=""))  ; flush.console()}
+    if(verbose) { message(paste("Coefficients for assignment: Minimum Probability to be assigned = ",round(minProb,2), ifelse(minProbAssignCoeff==1, "(default)",""),".\n Minimum difference between the probabilities of first and second most likely classes  = ", round(minDiff,2),ifelse(minDiffAssignCoeff==1, "(default)",""), sep=""))  ; utils::flush.console()}
                     
     # Calculo de la clasificacion
     esetSelection <- esetTdf[,genes, drop=FALSE]
                                 #                                if (!is.data.frame(esetSelection)) esetSelection <- t(cbind(NULL,esetSelection)) #To avoid error when there is only 1gen/class
-    prob <- t(attributes(predict(classifier, esetSelection, probability=TRUE ))$probabilities)
+    prob <- t(attributes(stats::predict(classifier, esetSelection, probability=TRUE ))$probabilities)
     if(is.null(names(prob))) colnames(prob)<-rownames(esetTdf) # if 2 classes... not labeled. Needed for mxcf...
     
     classes <- factor(apply(prob, 2, function(x) {assignment.conditions(x, minProb, minDiff)}))
@@ -272,7 +272,7 @@ querySummary <- function(queryResult, showNotAssignedSamples=TRUE, numDecimals=2
         if (stats[c,1]!=0) 
         {
             stats[c,4] <- round(mean(temp), numDecimals)
-            stats[c,5] <- round(sd(temp), numDecimals)
+            stats[c,5] <- round(stats::sd(temp), numDecimals)
         }
         else
         {
@@ -299,8 +299,8 @@ querySummary <- function(queryResult, showNotAssignedSamples=TRUE, numDecimals=2
     # Verbose
     if(verbose)
     {
-        message(paste("The query contains ", samplesQueried=numSamples, " samples. ",sum(stats[,1])," were assigned to a class resulting on a call rate of ", callRate,"%. \n", sep=""))
-        flush.console()
+      message(paste("The query contains ", samplesQueried=numSamples, " samples. ",sum(stats[,1])," were assigned to a class resulting on a call rate of ", callRate,"%. \n", sep=""))
+      utils::flush.console()
     }
     
     # Returns
@@ -373,11 +373,11 @@ plotAssignments <- function(queryResult, realLabels, minProbAssignCoeff=1, minDi
         axis(2)
     }
     
-    text(0.7, 0.95, labels="Assigned", col=abLineColor, cex=0.8)
-    if(numClasses>2)  text(0.3, 0.95, labels="Not Assigned", col="#606362", cex=0.8)
-    text(minProb-0.03, minDiff + 0.01, labels="minProb", col=abLineColor, srt = 90, pos=4, cex=0.8)
-    text(minX+0.09, minDiff+0.01, labels="minDiff", col=abLineColor, pos=1, cex=0.8)
-    legend("bottomright", "(x,y)", legend=c("Correct", "Incorrect"), title = "Most likely class", text.width = strwidth("1,000,000"),  xjust = 1, yjust = 1, lty = 0, pch=16, col=c(correctColor, incorrectColor), cex=0.8)
+    graphics::text(0.7, 0.95, labels="Assigned", col=abLineColor, cex=0.8)
+    if(numClasses>2)  graphics::text(0.3, 0.95, labels="Not Assigned", col="#606362", cex=0.8)
+    graphics::text(minProb-0.03, minDiff + 0.01, labels="minProb", col=abLineColor, srt = 90, pos=4, cex=0.8)
+    graphics::text(minX+0.09, minDiff+0.01, labels="minDiff", col=abLineColor, pos=1, cex=0.8)
+    graphics::legend("bottomright", "(x,y)", legend=c("Correct", "Incorrect"), title = "Most likely class", text.width = strwidth("1,000,000"),  xjust = 1, yjust = 1, lty = 0, pch=16, col=c(correctColor, incorrectColor), cex=0.8)
     
     # Plot probabilities
     realLabs <- as.character(realLabels[colnames(queryResult$probabilities)])    
@@ -529,8 +529,8 @@ calculateGenesRanking <- function(eset=NULL, sampleLabels=NULL, numGenesPlot=100
         plot(postProb[,1], type="n", ylab="Posterior Probability", xlab="Gene Rank", xlim=c(1,numGenesPlot), ylim=c(0,1))
         if((numClasses>3 && numClasses<10) && library(RColorBrewer,logical.return=TRUE))
         {
-            cols<- brewer.pal(numClasses,"Set1")    
-        }else cols <- rainbow(numClasses)
+            cols <- RColorBrewer::brewer.pal(numClasses,"Set1")    
+        }else cols <- grDevices::rainbow(numClasses)
         pchs <- c(15:(15+ncol(postProb)))
 
         if(numGenesPlot < 200) {interval <- 1:numGenesPlot
@@ -541,7 +541,7 @@ calculateGenesRanking <- function(eset=NULL, sampleLabels=NULL, numGenesPlot=100
         
         for(i in 1:numClasses)
         {
-            lines(interval,postProb[interval,i], type="b", col=cols[i], pch=pchs[i]) 
+          graphics::lines(interval,postProb[interval,i], type="b", col=cols[i], pch=pchs[i]) 
         }
 
         title(plotTitle)
@@ -710,7 +710,7 @@ plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=N
     
     if(any(nchar(classes)>10)) 
     {
-        classLabels <- setNames(paste("C", sapply(classes,function(x) which(classes==x)), sep=""), classes)
+        classLabels <- stats::setNames(paste("C", sapply(classes,function(x) which(classes==x)), sep=""), classes)
         warning(paste("Some class names are longer than 10 characters. The following labels will be used in plots:\n",paste(classLabels, names(classLabels), sep=": ", collapse="\n"), sep=""))
     }
         
@@ -793,7 +793,7 @@ plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=N
                 }else geneName<-  genesVector[i]
                 title(paste(geneTitles[genesVector[i],"class"], geneTitles[genesVector[i],"label"], sep="\n" ))
                 
-                if(showSampleNames) for (nSample in 1:length(colnames(matriz))) {text(nSample,ylim[2]-(ylim[2]*0.1),colnames(matriz)[nSample], pos=1, srt = 90, cex=0.5, col="grey")} 
+                if(showSampleNames) for (nSample in 1:length(colnames(matriz))) {graphics::text(nSample,ylim[2]-(ylim[2]*0.1),colnames(matriz)[nSample], pos=1, srt = 90, cex=0.5, col="grey")} 
                 
                 if(!is.null(sampleLabels))
                 {
@@ -803,12 +803,12 @@ plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=N
                         if (is.na((sampleLabels[j] != sampleLabels[j+1]) ) || sampleLabels[j] != sampleLabels[j+1]) 
                         {
                             if(!is.na((sampleLabels[j] != sampleLabels[j+1]) ) ) abline(v=j+0.5, col="black") # Separate classes
-                            if (any(nchar(classes)>10) ) {text(prevLim+((j-prevLim)/2), ylim[2]-(ylim[2]*0.04), labels=classLabels[sampleLabels[j]]) # Class title
-                            }else  text(prevLim+((j-prevLim)/2)+0.5, y=ylim[2]-(ylim[2]*0.04), labels=paste(sampleLabels[j],sep=""), pos=3) # Class title
+                            if (any(nchar(classes)>10) ) {graphics::text(prevLim+((j-prevLim)/2), ylim[2]-(ylim[2]*0.04), labels=classLabels[sampleLabels[j]]) # Class title
+                            }else  graphics::text(prevLim+((j-prevLim)/2)+0.5, y=ylim[2]-(ylim[2]*0.04), labels=paste(sampleLabels[j],sep=""), pos=3) # Class title
                             if(showMean)
                             {
                                 classMean <- mean(matriz[genesVector[i], (prevLim+1):j])
-                                lines(c(prevLim+1, j), c(classMean, classMean) , col="grey")
+                                graphics::lines(c(prevLim+1, j), c(classMean, classMean) , col="grey")
                             }
                             prevLim <- j
                         }
@@ -851,7 +851,7 @@ plotExpressionProfiles <- function(eset, genes=NULL, fileName=NULL, geneLabels=N
     if (!is.null(fileName))
     {
         dev.off()
-        if (verbose){ message(paste("The plot was saved as ",getwd(),"/",fileName," (PDF file)",sep="")); flush.console()} 
+        if (verbose){ message(paste("The plot was saved as ",getwd(),"/",fileName," (PDF file)",sep="")); utils::flush.console()} 
     }    else 
     {
         
@@ -1120,8 +1120,8 @@ plotDiscriminantPower <- function(classifier, classificationGenes=NULL , geneLab
                     barplot(pos,add=TRUE, col=mycols, width=0.9, space=0.1, names.arg=rep("",length(classNames)))
                     barplot(neg,add=TRUE, col=mycols, width=0.9, space=0.1, names.arg=rep("",length(classNames)))
                     abline(h=0, lwd=2)
-                    if(!correctedAlpha) text(seq(1, length(classNames), by=1)-0.5, par("usr")[3] - 0.2, labels = classNames, srt = 90, pos = 4, xpd = TRUE) 
-                    if(correctedAlpha) text(seq(1, length(classNames), by=1)-0.5, par("usr")[3], labels = classNames, srt = 90, pos = 4, xpd = TRUE) 
+                    if(!correctedAlpha) graphics::text(seq(1, length(classNames), by=1)-0.5, par("usr")[3] - 0.2, labels = classNames, srt = 90, pos = 4, xpd = TRUE) 
+                    if(correctedAlpha) graphics::text(seq(1, length(classNames), by=1)-0.5, par("usr")[3], labels = classNames, srt = 90, pos = 4, xpd = TRUE) 
                 }
             }    
         }
@@ -1129,7 +1129,7 @@ plotDiscriminantPower <- function(classifier, classificationGenes=NULL , geneLab
     if (!is.null(fileName))
     {
         dev.off()
-        if (verbose){ message(paste("The SV plot was saved as ",getwd(),"/",fileName," (PDF file)",sep="")); flush.console()} 
+        if (verbose){ message(paste("The SV plot was saved as ",getwd(),"/",fileName," (PDF file)",sep="")); utils::flush.console()} 
     }        
         
     ################################
@@ -1187,6 +1187,7 @@ plotDiscriminantPower <- function(classifier, classificationGenes=NULL , geneLab
 
 plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NULL, genesInfo=NULL,geneLabels=NULL, returniGraphs=FALSE, plotType="dynamic", fileName=NULL, plotAllNodesNetwork=TRUE, plotOnlyConnectedNodesNetwork=FALSE,  plotClassifcationGenesNetwork=FALSE, labelSize=0.5, vertexSize=NULL, width=NULL, height=NULL, verbose=TRUE)
 {
+  plotType <- plotType[1]
     layoutList <- NULL
     if(!library(igraph, logical.return=TRUE)) 
     {    
@@ -1212,7 +1213,7 @@ plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NU
         if(!is.character(plotType)) { stop("plotType is not valid.")
         }else{
             if(!plotType %in% c("dynamic", "static", "pdf")) stop("plotType should be either 'dynamic', 'static' or 'pdf'.")
-            if ((plotType == "dynamic") && !("tcltk" %in% rownames(installed.packages())))
+            if ((plotType == "dynamic") && !("tcltk" %in% rownames(utils::installed.packages())))
             {
                 warning("tcltk package is required for dynamic plots. A static network plot will be drawn instead.")
                 plotType <- "static"
@@ -1480,19 +1481,19 @@ plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NU
             #### Create graph object ####
             if((is.null(genesInfoList) || nrow(genesInfoList[[nw]])==0 ) || any(!classGenes %in% rownames(genesInfoList[[nw]]))) 
             {
-                if(length(genesNetwork[[nw]]@nodes)>0)    {        classGraph <- graph.data.frame(as.data.frame(genesNetwork[[nw]]@edges[,ntwColnames,drop=FALSE]), vertices=data.frame(nodes=genesNetwork[[nw]]@nodes), directed=FALSE)
-                } else                                                                    classGraph <- graph.data.frame(as.data.frame(genesNetwork[[nw]]@edges[,ntwColnames,drop=FALSE]), directed=FALSE)
+                if(length(genesNetwork[[nw]]@nodes)>0)    {        classGraph <- igraph::graph.data.frame(as.data.frame(genesNetwork[[nw]]@edges[,ntwColnames,drop=FALSE]), vertices=data.frame(nodes=genesNetwork[[nw]]@nodes), directed=FALSE)
+                } else classGraph <- igraph::graph.data.frame(as.data.frame(genesNetwork[[nw]]@edges[,ntwColnames,drop=FALSE]), directed=FALSE)
             }else
             {
-                classGraph <- graph.data.frame(as.data.frame(genesNetwork[[nw]]@edges[,ntwColnames,drop=FALSE]), directed=FALSE, vertices=data.frame(nodes=rownames(genesInfoList[[nw]]),genesInfoList[[nw]]))        
+                classGraph <- igraph::graph.data.frame(as.data.frame(genesNetwork[[nw]]@edges[,ntwColnames,drop=FALSE]), directed=FALSE, vertices=data.frame(nodes=rownames(genesInfoList[[nw]]),genesInfoList[[nw]]))        
             }
-            if (vcount(classGraph) != 0) 
+            if (igraph::vcount(classGraph) != 0) 
             {
                 #### Set graph parameters #####
                 # Layout
                 if(is.null(layoutList)) 
                 {
-                    graphLayout <- layout.fruchterman.reingold(classGraph) # .grid is faster, but the result looks far worse.
+                    graphLayout <- igraph::layout.fruchterman.reingold(classGraph) # .grid is faster, but the result looks far worse.
                 }else
                 {
                     graphLayout <- layoutList[[nw]]
@@ -1500,15 +1501,15 @@ plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NU
                 
 
                 # Vertex labels
-                vertexLabels <- get.vertex.attribute(classGraph,"name")
+                vertexLabels <- igraph::get.vertex.attribute(classGraph,"name")
                 if(!is.null(geneLabels)) vertexLabels[which(vertexLabels %in% names(geneLabels))] <- geneLabels[vertexLabels[which(vertexLabels %in% names(geneLabels))]]
                 nVertex<-length(vertexLabels)
                 
                 # Vertex colors: Expression
                 vertexColors<-rep("#7094FF", nVertex) # Ligth blue
-                if(!is.null(get.vertex.attribute(classGraph,"exprsMeanDiff")))
+                if(!is.null(igraph::get.vertex.attribute(classGraph,"exprsMeanDiff")))
                 {
-                    exprsDiff <- as.numeric(get.vertex.attribute(classGraph,"exprsMeanDiff"))
+                    exprsDiff <- as.numeric(igraph::get.vertex.attribute(classGraph,"exprsMeanDiff"))
                     reds <- colorRampPalette(c("white","red"))(8)[c(7,6,5,4,4,3,3,2,2,2)]     # Colors: 5, length:10. Index=0 very overexpressed, 10=almost 0
                     greens <- colorRampPalette(c("white","darkgreen"))(8)[c(7,6,5,4,4,3,3,2,2,2)]                # Index=0 very rexpressed, 10 = almost 0 ?
 
@@ -1530,9 +1531,9 @@ plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NU
                 }
                                 
                 vertSizeArr <- rep(vSize,nVertex)  # By default sightly smaller than the minimum DP
-                if(!is.null(get.vertex.attribute(classGraph,"discriminantPower")))
+                if(!is.null(igraph::get.vertex.attribute(classGraph,"discriminantPower")))
                 {
-                    discPower<-round(as.numeric(get.vertex.attribute(classGraph,"discriminantPower")))
+                    discPower<-round(as.numeric(igraph::get.vertex.attribute(classGraph,"discriminantPower")))
                     if(any(!is.na(discPower)))
                     {
                         incr = ifelse( max(discPower, na.rm=TRUE)>min(discPower, na.rm=TRUE), (vSize*0.6/(max(discPower, na.rm=TRUE)-min(discPower, na.rm=TRUE))), 1)         # vSize + incr = max size
@@ -1546,23 +1547,23 @@ plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NU
                 # Shape: Classification gene
                 vertexShape<- rep("circle",nVertex)
                 labelColor <- rep("black",nVertex)
-                if(!is.null(get.vertex.attribute(classGraph,"discriminantPower")))
+                if(!is.null(igraph::get.vertex.attribute(classGraph,"discriminantPower")))
                 {
                     dpNotNA <- which(!is.na(discPower))
                     vertexShape[dpNotNA] <- rep("square", length(dpNotNA)) # Only works with plot() (not with tkplot) 
                 }    
                 if(!is.null(classificationGenes)) # alguna comprobacion mas?
                 {
-                    vertexShape[which(get.vertex.attribute(classGraph,"name")%in% as.vector(getRanking(classificationGenes, showGeneID=TRUE)$geneID))] <- "square"
+                    vertexShape[which(igraph::get.vertex.attribute(classGraph,"name")%in% as.vector(getRanking(classificationGenes, showGeneID=TRUE)$geneID))] <- "square"
                 }
 
                 # Edge color (Relation type)
                 relColors<- c("blue", "orange")    # It is assumed there are only two types of relations
-                relColors <- ifelse( get.edge.attribute(classGraph,"relation")==levels(factor(get.edge.attribute(classGraph,"relation")))[1], relColors[1],relColors[2])
+                relColors <- ifelse( igraph::get.edge.attribute(classGraph,"relation")==levels(factor(igraph::get.edge.attribute(classGraph,"relation")))[1], relColors[1],relColors[2])
 
                 #### Output plot ####
                 if (tolower(plotType)=="dynamic") {
-                    if(ecount(classGraph) > 0)
+                    if(igraph::ecount(classGraph) > 0)
                     {
                         tkplot(classGraph, layout=graphLayout, vertex.label=vertexLabels, vertex.label.family="sans",  vertex.color=vertexColors, vertex.frame.color=vertexColors, vertex.label.color=labelColor, vertex.size=vertSizeArr, edge.color=relColors, edge.width=2, canvas.width=width, canvas.height=height)  
                         #vertex.label.font=2, #Error in BioConductor Check?
@@ -1611,19 +1612,19 @@ plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NU
                text(0.65,0.3,"Low DP", pos=4)
                
             text(0,0.2,"Line color: Relation type", pos=4, font=2)
-              lines(c(0.25,0.5),c(0.05,0.05),col="blue", lty="solid", lwd=2)
+              graphics::lines(c(0.25,0.5),c(0.05,0.05),col="blue", lty="solid", lwd=2)
                text(0.30,0.1,"Correlation", pos=4)
-              lines(c(0.6,0.9),c(0.05,0.05),col="orange", lty="solid", lwd=2)
+               graphics::lines(c(0.6,0.9),c(0.05,0.05),col="orange", lty="solid", lwd=2)
                text(0.6,0.1,"Mutual information", pos=4)
                
-            lines(c(0,1),c(1,1),col="black", lty="solid", lwd=1)  #  __
-            lines(c(0,0),c(0,1),col="black", lty="solid", lwd=1)  # |
-            lines(c(1,1),c(0,1),col="black", lty="solid", lwd=1)  #    |
-            lines(c(1,0),c(0,0),col="black", lty="solid", lwd=1)  #  __
+            graphics::lines(c(0,1),c(1,1),col="black", lty="solid", lwd=1)  #  __
+            graphics::lines(c(0,0),c(0,1),col="black", lty="solid", lwd=1)  # |
+            graphics::lines(c(1,1),c(0,1),col="black", lty="solid", lwd=1)  #    |
+            graphics::lines(c(1,0),c(0,0),col="black", lty="solid", lwd=1)  #  __
             
             #### Close dev ####
             dev.off()
-            if (verbose){ message(paste("The plot was saved as ",getwd(),"/",fileName," (PDF file)",sep="")); flush.console()} 
+            if (verbose){ message(paste("The plot was saved as ",getwd(),"/",fileName," (PDF file)",sep="")); utils::flush.console()} 
         }
         
         names(graphList) <- names(genesNetwork)    

@@ -32,6 +32,8 @@ exportMethods(initialize, show, overview, names)
 
 import(Biobase)
 import(methods)
+import(graphics)
+import(grDevices)
 importFrom(minet, minet)
 importFrom(e1071, svm)
 importFrom(graphics, plot)

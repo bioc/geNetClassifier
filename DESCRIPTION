@@ -2,14 +2,14 @@ Package: geNetClassifier
 Type: Package
 Title: Classify diseases and build associated gene networks using gene
         expression profiles
-Version: 1.27.3
-Date: 2019-12-28
+Version: 1.27.4
+Date: 2020-03-09
 Author: Sara Aibar, Celia Fontanillo and Javier De Las Rivas.
         Bioinformatics and Functional Genomics Group. Cancer Research
         Center (CiC-IBMCC, CSIC/USAL). Salamanca. Spain.
 Maintainer: Sara Aibar <saibar@usal.es>
 Depends: R (>= 2.10.1), Biobase (>= 2.5.5), EBarrays, minet, methods
-Imports: e1071, graphics
+Imports: e1071, graphics, grDevices
 Suggests: leukemiasEset, RUnit, BiocGenerics
 Enhances: RColorBrewer, igraph, infotheo
 Description: Comprehensive package to automatically train and validate a multi-class SVM classifier based on gene expression data. Provides transparent selection of gene markers, their coexpression networks, and an interface to query the classifier.
