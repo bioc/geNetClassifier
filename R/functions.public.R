@@ -318,7 +318,7 @@ querySummary <- function(queryResult, showNotAssignedSamples=TRUE, numDecimals=2
 # New argument: pointSize 
 # Background color: Blue
 # Cairo
-plotAssignments <- function(queryResult, realLabels, minProbAssignCoeff=1, minDiffAssignCoeff=0.8, totalNumberOfClasses=NULL, pointSize=0.8, identify=FALSE)                            
+plotAssignments <- function(queryResult, realLabels, minProbAssignCoeff=1, minDiffAssignCoeff=0.8, totalNumberOfClasses=NULL, pointSize=0.8, identify=FALSE)
 {
     # Comprobar y concatenar si hay varias queries
     queryResult <- queryResultCheck(queryResult)
@@ -405,11 +405,16 @@ plotAssignments <- function(queryResult, realLabels, minProbAssignCoeff=1, minDi
     points(biggestProb[correct], nextProb[correct], col=correctColor, pch=16, cex=pointSize)
     points(biggestProb[incorrect], nextProb[incorrect], col=incorrectColor, pch=16, cex=pointSize)                                
 
+    coordinates <- cbind(biggestProb, nextProb)
+    rownames(coordinates) <- colnames(prob)
+    
     if(identify && (!names(dev.cur()) %in% c("pdf", "Cairo"))) 
     {
-        print("To identify a sample on the plot click on it. Press ESC or  right-click on the plot screen to finish.")
-        id <- identify(coordinates, labels=paste(rownames(coordinates)," (",prob["realLabels", rownames(coordinates)], ")", sep=""))
+      print("To identify a sample on the plot click on it. Press ESC or  right-click on the plot screen to finish.")
+      id <- graphics::identify(coordinates, 
+      labels=paste(rownames(coordinates)," (",prob["realLabels", rownames(coordinates)], ")", sep=""))
     }
+    invisible(coordinates)
 }
 
 
@@ -527,7 +532,7 @@ calculateGenesRanking <- function(eset=NULL, sampleLabels=NULL, numGenesPlot=100
 
         numClasses <- ncol(postProb) # If there are only 2 classes, postProb only has 1 column
         plot(postProb[,1], type="n", ylab="Posterior Probability", xlab="Gene Rank", xlim=c(1,numGenesPlot), ylim=c(0,1))
-        if((numClasses>3 && numClasses<10) && library(RColorBrewer,logical.return=TRUE))
+        if((numClasses>3 && numClasses<10) && ("RColorBrewer" %in% rownames(utils::installed.packages())))
         {
             cols <- RColorBrewer::brewer.pal(numClasses,"Set1")    
         }else cols <- grDevices::rainbow(numClasses)
@@ -1189,7 +1194,7 @@ plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NU
 {
   plotType <- plotType[1]
     layoutList <- NULL
-    if(!library(igraph, logical.return=TRUE)) 
+    if(!("igraph" %in% rownames(utils::installed.packages()))) 
     {    
         warning("The function plotNetwork()  requires the packge igraph but it could not be loaded.")
         graphList<-NULL
@@ -1565,7 +1570,7 @@ plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NU
                 if (tolower(plotType)=="dynamic") {
                     if(igraph::ecount(classGraph) > 0)
                     {
-                        tkplot(classGraph, layout=graphLayout, vertex.label=vertexLabels, vertex.label.family="sans",  vertex.color=vertexColors, vertex.frame.color=vertexColors, vertex.label.color=labelColor, vertex.size=vertSizeArr, edge.color=relColors, edge.width=2, canvas.width=width, canvas.height=height)  
+                        igraph::tkplot(classGraph, layout=graphLayout, vertex.label=vertexLabels, vertex.label.family="sans",  vertex.color=vertexColors, vertex.frame.color=vertexColors, vertex.label.color=labelColor, vertex.size=vertSizeArr, edge.color=relColors, edge.width=2, canvas.width=width, canvas.height=height)  
                         #vertex.label.font=2, #Error in BioConductor Check?
                         # vertex.label.cex=labelSize,  : En valores menores de 1 (0.3, 0.8...) a veces da error.
                     } else {

@@ -365,7 +365,7 @@ svmCrossVal <- function(trainEset, trainSampleLabels, cvInternSamples, minProbAs
 ## Devuelve la red de interaccion de los genes pasados como parametro
 interaction.net <- function(eset, genes, lp, method="clr", estimator="mi.empirical", threshold=0.5)
 {
-    require(infotheo) # required by minet
+    # require(infotheo) # required by minet
     net <- cbind(gene1=NULL, class1=character(0), gene2=NULL, class2=character(0), relation=character(0), value=numeric(0))
 
     #Comprobacion de parametros
@@ -887,7 +887,7 @@ extractGeneLabels <- function(genesAnnotation, geneList=NULL)
             {
                 ######
                 # Plot of errorNumGenes (all in one)
-                if((length(numGenesTPglobal)>3 && length(numGenesTPglobal)<10) && library(RColorBrewer,logical.return=TRUE))
+                if((length(numGenesTPglobal)>3 && length(numGenesTPglobal)<10) && ("RColorBrewer" %in% rownames(utils::installed.packages())))
                 {
                     colores<- RColorBrewer::brewer.pal(length(numGenesTPglobal),"Dark2")
                 }else colores <- grDevices::rainbow(length(numGenesTPglobal))
@@ -937,7 +937,7 @@ extractGeneLabels <- function(genesAnnotation, geneList=NULL)
                 ######
                 # Gene selection (barplot) # GE
                 nIters <- dim(numGenesClassGE[[1]])[1]
-                if((length(numGenesClassGE)==5) && library(RColorBrewer,logical.return=TRUE))
+                if((length(numGenesClassGE)==5) && ("RColorBrewer" %in% rownames(utils::installed.packages())))
                 {
                     colores<- RColorBrewer::brewer.pal(9,"Purples")[-c(1,2,3,9)]
                 }else colores <- grDevices::rainbow(length(numGenesClassGE))
