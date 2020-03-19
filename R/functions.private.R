@@ -558,13 +558,12 @@ remove.redundancy <- function(eset, genes, lp, net, relation=NULL)
 # Used in main. Also exported as plot() for class Global Return
 plotGeNetClassifierReturn <- function( geNetClassifierReturn, fileName=NULL, lpThreshold=0.95, numGenesLpPlot=1000, numGenesNetworkPlot=100, geneLabels=NULL, verbose=TRUE)
 {
-  if(class(geNetClassifierReturn) != "GeNetClassifierReturn") stop("")
+  if(class(geNetClassifierReturn)[1] != "GeNetClassifierReturn") stop("")
   if(!is.null(fileName) && !is.character(fileName))  stop("The plots name is not a valid name.")
   if(!is.numeric(lpThreshold) || (lpThreshold>=1 || lpThreshold <0)) stop("Lp threshold should be a probability (a number between 0 and 1).")
   if(!is.numeric(numGenesLpPlot)) stop("The number of genes to plot in the posterior probability plot should be a number .")
   if(!is.numeric(numGenesNetworkPlot) || numGenesNetworkPlot< 2) stop("The number of genes to plot in the network should be a number higher than two.")
   if(!is.logical(verbose)) verbose <- TRUE
-
 
   ####### LP plot
   if(("genesRanking" %in% names(geNetClassifierReturn)) && any(numGenes(geNetClassifierReturn@genesRanking)>0))
