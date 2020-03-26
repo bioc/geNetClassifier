@@ -923,7 +923,7 @@ plotDiscriminantPower <- function(classifier, classificationGenes=NULL , geneLab
     if(!is(classifier,"svm")) stop("The first argument should be a svm classifier or the object returned by geNetClassifier.")
     
     # ClassificationGenes (GenesRanking)
-    if(class(classificationGenes) == "GenesRanking") 
+    if(any(class(classificationGenes) == "GenesRanking"))
     {    
         if(sum(numGenes(classificationGenes)))
         {
@@ -1288,7 +1288,7 @@ plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NU
 
         # Check classificationGenes and Genes ranking format and EXTRACT its genes INFO.
         if(is.matrix(classificationGenes) && nrow(classificationGenes)==0) classificationGenes<-NULL
-        if(all(class(classificationGenes) == "GenesRanking") && all(numGenes(classificationGenes) == 0))  classificationGenes <- NULL
+        if(all(any(class(classificationGenes) == "GenesRanking") && all(numGenes(classificationGenes) == 0))  classificationGenes <- NULL
         if(plotClassifcationGenesNetwork && is.null(classificationGenes)) warning("The classifcation genes network can only be plotted if the classification genes are provided.")
         if((!is.null(classificationGenes) && !is.null(genesRanking)) && !is.null(genesInfo)) stop("Please, provide either 'genesInfo' OR a genesRanking and classificationGenes.")
         if(!is.null(genesRanking) || !is.null(classificationGenes))
@@ -1302,7 +1302,7 @@ plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NU
             
             if(!is.null(classificationGenes))
             {
-                if(class(classificationGenes) != "GenesRanking") stop("classificationGenes should be an object of type GenesRanking (the classificationGenes object returned by the classifier).")
+                if(class(classificationGenes)[1] != "GenesRanking") stop("classificationGenes should be an object of type GenesRanking (the classificationGenes object returned by the classifier).")
 
                 classificationGenesInfo <- genesDetails(classificationGenes)[nwClasses]
                 clGenes <- lapply(classificationGenesInfo, rownames)            
