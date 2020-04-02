@@ -1287,8 +1287,8 @@ plotNetwork  <- function(genesNetwork, classificationGenes=NULL, genesRanking=NU
         }
 
         # Check classificationGenes and Genes ranking format and EXTRACT its genes INFO.
-        if(is.matrix(classificationGenes) && nrow(classificationGenes)==0) classificationGenes<-NULL
-        if(all(any(class(classificationGenes) == "GenesRanking") && all(numGenes(classificationGenes) == 0))  classificationGenes <- NULL
+        if(is.matrix(classificationGenes) && nrow(classificationGenes)==0) classificationGenes <- NULL
+        if(any(class(classificationGenes) == "GenesRanking") && all(numGenes(classificationGenes) == 0))  classificationGenes <- NULL
         if(plotClassifcationGenesNetwork && is.null(classificationGenes)) warning("The classifcation genes network can only be plotted if the classification genes are provided.")
         if((!is.null(classificationGenes) && !is.null(genesRanking)) && !is.null(genesInfo)) stop("Please, provide either 'genesInfo' OR a genesRanking and classificationGenes.")
         if(!is.null(genesRanking) || !is.null(classificationGenes))
