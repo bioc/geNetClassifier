@@ -102,7 +102,7 @@ setClass(Class="GenesNetwork",
     {
         object@nodes
     })
-    if(!exists("nodes") || class(nodes)[1]!="standardGeneric") setGeneric(name="nodes", def=function(object) standardGeneric("nodes"))
+    if(!exists("nodes") || !is(nodes, "genericFunction")) setGeneric(name="nodes", def=function(object) standardGeneric("nodes"))
     setMethod("nodes", signature="GenesNetwork", definition=function(object)
     {
         getNodes(object)
@@ -128,7 +128,7 @@ setClass(Class="GenesNetwork",
     {
         object@edges
     })
-    if(!exists("edges") || class(edges)[1]!="standardGeneric") setGeneric(name="edges", def=function(object) standardGeneric("edges"))
+    if(!exists("edges") || !is(edges, "genericFunction")) setGeneric(name="edges", def=function(object) standardGeneric("edges"))
     setMethod("edges", signature="GenesNetwork", definition=function(object)
     {
         getEdges(object)
